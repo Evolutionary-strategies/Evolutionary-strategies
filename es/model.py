@@ -21,7 +21,7 @@ classes = ('plane', 'car', 'bird', 'cat',
            'deer', 'dog', 'frog', 'horse', 'ship', 'truck')
 
 class Net(nn.Module):
-    def __init__(self, params):
+    def __init__(self, params = 0):
         super().__init__()
         self.conv1 = nn.Conv2d(3, 3, kernel_size=(3,3))
         self.conv2 = nn.Conv2d(3, 6, kernel_size=(3,3))
@@ -58,4 +58,19 @@ class Net(nn.Module):
 
         print(f'Accuracy of the network on the 10000 test images: {100 * correct // total} %')
 
+net = Net()
 
+from prettytable import PrettyTable
+
+def count_parameters(model):
+    table = PrettyTable(["Modules", "Parameters"])
+    total_params = 0
+    for name, parameter in model.named_parameters():
+        param = parameter.numel()
+        table.add_row([name, param])
+        total_params+=param
+    print(table)
+    print(f"Total Trainable Params: {total_params}")
+    return total_params
+    
+count_parameters(net)
