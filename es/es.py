@@ -19,24 +19,40 @@ class SharedNoiseTable(object):
     def sample_index(self, stream, dim):
         return stream.randint(0, len(self.noise) - dim + 1)
 
+def calc_evolution(rews, seeds, len, noise, lr):
+    evo = np.zeros(len)
+    for seed, reward in zip(seeds, rews):
+        evo += reward * noise.get(seed, len)
+    return (lr/len(seeds) * evo)
 
-def run_master():
-    master = Master(nworkers=8)
+    
+
+def genseeds(nworkers):
+    seeds = np.random.rand(nworkers)
+    return seeds
+
+def run_master(nworkers):
+    master = Master(nworkers)
+    rewards = np.zeros(nworkers)
     while True:
+        seeds = genseeds(nworkers)
+        master.push_run(seeds, rewards)
         rewards = master.wait_for_results()
-        master.push_results(rewards)
+        
 
 def run_worker():
     worker = Worker()
+    net = Net()
     noise = SharedNoiseTable()
     params = np.zeros(100)
-    seed = np.random()
+    seeds = np.zeros(2)
     while True:
-        epsilon = noise.get(seed, 0)
-        stdev = 0
-        perturbed_params = params + stdev*epsilon
-        net = Net(perturbed_params)
+        prevseeds = seeds
+        rewards, seeds = worker.poll_run()
+        params += calc_evolution(rewards, prevseeds, len(params), noise, worker.learning_rate)
+        perturbed_params = params + noise.get(seeds[worker.worker_id], len(params))
+        net.set_params(perturbed_params)
         worker.send_result(net.test())
-        rewards, seeds = worker.poll_results()
+        
 
 
