@@ -51,7 +51,7 @@ class Master(object):
         self.r.set("rewards", serialize(rewards))
         self.r.set("run_id", serialize(self.run_id))
         self.run_id += 1
-    
+  
 
 class Worker(object):
     def __init__(self, run_id):

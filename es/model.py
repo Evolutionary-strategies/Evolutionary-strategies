@@ -39,6 +39,19 @@ class Net(nn.Module):
         x = self.fc2(x)
         return x
 
+    # kilde: https://discuss.pytorch.org/t/how-to-manually-set-the-weights-in-a-two-layer-linear-model/45902
+    # Ikke testa!
+    def set_params(self, params):
+        with torch.no_grad():
+            self.conv1[0].weigth = nn.Parameter(params[0]) # params[0] må være en tensor
+            self.conv2[0].weigth = nn.Parameter(params[1]) # params[1] må være en tensor
+        
+    # kilde: https://discuss.pytorch.org/t/how-to-output-weight/2796
+    # Printer, men vet ikke om det er "riktige" tensorer den printer
+    def print_layers(self):
+        for param in self.parameters():
+            print(param.data)
+
     def test(self):
         dataiter = iter(testloader)
         images, labels = dataiter.next()
@@ -59,6 +72,7 @@ class Net(nn.Module):
         print(f'Accuracy of the network on the 10000 test images: {100 * correct // total} %')
 
 net = Net()
+#net.set_params([0,0])
 
 from prettytable import PrettyTable
 
