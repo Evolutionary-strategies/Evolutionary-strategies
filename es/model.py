@@ -3,7 +3,7 @@ import torchvision
 import torchvision.transforms as transforms
 import torch.nn as nn
 import torch.nn.functional as F
-
+torch.set_num_threads(1)
 
 
 transform = transforms.Compose(
@@ -21,7 +21,7 @@ classes = ('plane', 'car', 'bird', 'cat',
            'deer', 'dog', 'frog', 'horse', 'ship', 'truck')
 
 class Net(nn.Module):
-    def __init__(self, params = 0):
+    def __init__(self):
         super().__init__()
         self.conv1 = nn.Conv2d(3, 3, kernel_size=(3,3))
         self.conv2 = nn.Conv2d(3, 6, kernel_size=(3,3))
