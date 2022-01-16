@@ -16,8 +16,6 @@ class SharedNoiseTable(object):
     def get(self, i, dim):
         return self.noise[i:i + dim]
 
-    def sample_index(self, stream, dim):
-        return stream.randint(0, len(self.noise) - dim + 1)
 
 def calc_evolution(rews, seeds, len, noise, lr):
     evo = np.zeros(len)
