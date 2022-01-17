@@ -3,7 +3,7 @@ import torchvision
 import torchvision.transforms as transforms
 import torch.nn as nn
 import torch.nn.functional as F
-
+torch.set_num_threads(1)
 
 
 transform = transforms.Compose(
@@ -21,7 +21,7 @@ classes = ('plane', 'car', 'bird', 'cat',
            'deer', 'dog', 'frog', 'horse', 'ship', 'truck')
 
 class Net(nn.Module):
-    def __init__(self, params = 0):
+    def __init__(self):
         super().__init__()
         self.conv1 = nn.Conv2d(3, 3, kernel_size=(3,3))
         self.conv2 = nn.Conv2d(3, 6, kernel_size=(3,3))
@@ -69,12 +69,12 @@ class Net(nn.Module):
                 total += labels.size(0)
                 correct += (predicted == labels).sum().item()
 
-        print(f'Accuracy of the network on the 10000 test images: {100 * correct // total} %')
+        print(f'Accuracy of the network on the 10000 test images: {correct / total} ')
 
 net = Net()
 #net.set_params([0,0])
 
-from prettytable import PrettyTable
+"""from prettytable import PrettyTable
 
 def count_parameters(model):
     table = PrettyTable(["Modules", "Parameters"])
@@ -87,4 +87,6 @@ def count_parameters(model):
     print(f"Total Trainable Params: {total_params}")
     return total_params
     
-count_parameters(net)
+count_parameters(net)"""
+
+net.test()

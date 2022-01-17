@@ -54,22 +54,24 @@ class Master(object):
   
 
 class Worker(object):
-    def __init__(self, run_id):
+    def __init__(self, run_id, worker_id, lr):
         self.r = redis.Redis(host=HOST, port=PORT, db=DB, password=PASSWORD)
         self.run_id = run_id
+        self.worker_id = worker_id
+        self.learning_rate = lr
     
-    def poll_results(self):
-        while True:
-            new_run_id = deserialize(self.r.get("run_id"))
-            time.sleep(0.1)
-            if new_run_id != self.run_id:
-                break
+    def poll_run(self):
+            while True:
+                new_run_id = deserialize(self.r.get("run_id"))
+                time.sleep(0.1)
+                if new_run_id != self.run_id:
+                    break
+            
+            self.run_id = new_run_id
+            rews = deserialize(self.r.get("rewards"))
+            seeds = deserialize(self.r.get("seeds"))
+            return rews, seeds
         
-        self.run_id = new_run_id
-        
-        rews = deserialize(self.r.get("rewards"))
-        seeds = deserialize(self.r.get("seeds"))
-        return rews, seeds
 
     def send_result(self, rew, seed):
         """Put fitnesses and seed in redis."""
