@@ -30,7 +30,7 @@ class Net(nn.Module):
         self.fc1 = nn.Linear(1176, 128)
         self.fc2 = nn.Linear(128, 10)
         for param in self.parameters():
-                param.requires_grad = False
+            param.requires_grad = False
 
     def forward(self, x):
         x = F.relu(self.conv1(x))
@@ -77,26 +77,77 @@ class Net(nn.Module):
                 correct += (predicted == labels).sum().item()
         print(f'Accuracy of the network on the 10000 test images: {correct / total} ')
         return correct / total
+    
+    
+    #Treningsmetoder til GD:
 
-net = Net()
+    # Predictor
+    def f(self, x):
+        return torch.softmax(self.forward(x), dim=1)
 
-print("Model's state_dict:")
-# for param_tensor in net.state_dict():
-    #print(param_tensor, "\t", net.state_dict()[param_tensor])
+    # Cross Entropy loss
+    def loss(self, x, y):
+        return nn.functional.cross_entropy(self.forward(x), y.argmax(1))
 
-print("val", net.state_dict()['conv1.weight'])
+    # Accuracy
+    def accuracy(self, x, y):
+        return torch.mean(torch.eq(self.f(x).argmax(1), y.argmax(1)).float())
 
+
+
+#Utesta
 def load_es_model(params, path = "../models/example.pt"):
     net = Net()
     net.load_state_dict(torch.load(path))
     net.set_params(params)
     return net
 
+#Utesta
 def load_gd_model(path = "../models/example.pt"):
     net = Net()
     net.load_state_dict(torch.load(path))
     net.eval()
     return net
+
+
+# funker ikke :((
+def train_gd_model():
+    print("Training Gradient decent model")
+    # torch.set_num_threads(7) #Endre på denne?
+
+    cifar_data = torchvision.datasets.CIFAR10(root='./data', train=True,
+                                       download=True, transform=transform)
+    x_train = torch.tensor(cifar_data.data.reshape(-1, 3, 32, 32)).float()
+    y_train = torch.zeros((len(cifar_data.targets), 10))
+    cifar_test = torchvision.datasets.CIFAR10(root='./data', train=False,
+                                       download=True, transform=transform)
+    x_test = torch.tensor(cifar_test.data.reshape(-1, 3, 32, 32)).float()
+    y_test= torch.zeros((len(cifar_test.targets), 10))
+
+    print(x_train.shape)
+    print(y_train.shape)
+    print()
+    print(x_test.shape)
+    print(y_test.shape)
+    print()
+
+    batches = 500
+    x_train_batches = torch.split(x_train, batches)
+    y_train_batches = torch.split(y_train, batches)
+
+    net = Net()
+    optimizer = torch.optim.Adam(net.parameters(), 0.05)
+
+    for epoch in range(10):
+        for batch in range(len(x_train_batches)):
+            net.loss(x_train_batches[batch], y_train_batches[batch]).backward()  # Compute loss gradients
+            optimizer.step()  # Perform optimization by adjusting W and b,
+            optimizer.zero_grad()  # Clear gradients for next step
+
+        print("accuracy = %s" % net.accuracy(x_test, y_test))
+    print("Finished")
+
+# train_gd_model()
 
 """from prettytable import PrettyTable
 
