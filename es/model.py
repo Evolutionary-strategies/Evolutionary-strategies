@@ -55,6 +55,10 @@ class Net(nn.Module):
         for param in self.parameters():
             print(param.data)
 
+    def save_model(self, name = "example"):
+        path = "../models/" + name + ".pt"
+        torch.save(self.state_dict(), path)
+
     def test(self):
         dataiter = iter(testloader)
         images, labels = dataiter.next()
@@ -74,9 +78,25 @@ class Net(nn.Module):
         print(f'Accuracy of the network on the 10000 test images: {correct / total} ')
         return correct / total
 
+net = Net()
 
+print("Model's state_dict:")
+# for param_tensor in net.state_dict():
+    #print(param_tensor, "\t", net.state_dict()[param_tensor])
 
+print("val", net.state_dict()['conv1.weight'])
 
+def load_es_model(params, path = "../models/example.pt"):
+    net = Net()
+    net.load_state_dict(torch.load(path))
+    net.set_params(params)
+    return net
+
+def load_gd_model(path = "../models/example.pt"):
+    net = Net()
+    net.load_state_dict(torch.load(path))
+    net.eval()
+    return net
 
 """from prettytable import PrettyTable
 
