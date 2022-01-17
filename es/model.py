@@ -3,6 +3,7 @@ import torchvision
 import torchvision.transforms as transforms
 import torch.nn as nn
 import torch.nn.functional as F
+import numpy as np
 torch.set_num_threads(1)
 
 
@@ -13,7 +14,7 @@ transform = transforms.Compose(
 batch_size = 4
 
 testset = torchvision.datasets.CIFAR10(root='./data', train=False,
-                                       download=True, transform=transform)
+                                       download=False, transform=transform)
 testloader = torch.utils.data.DataLoader(testset, batch_size=batch_size,
                                          shuffle=False, num_workers=0)
 
@@ -43,8 +44,10 @@ class Net(nn.Module):
     # Ikke testa!
     def set_params(self, params):
         with torch.no_grad():
-            self.conv1[0].weigth = nn.Parameter(params[0]) # params[0] må være en tensor
-            self.conv2[0].weigth = nn.Parameter(params[1]) # params[1] må være en tensor
+            self.conv1.weight = torch.nn.Parameter(torch.from_numpy(params[0:81]).reshape(3,3,3,3).float())
+            self.conv2.weight = torch.nn.Parameter(torch.from_numpy(params[81:243]).reshape(6,3,3,3).float())
+            
+            
         
     # kilde: https://discuss.pytorch.org/t/how-to-output-weight/2796
     # Printer, men vet ikke om det er "riktige" tensorer den printer
@@ -68,11 +71,12 @@ class Net(nn.Module):
                 _, predicted = torch.max(outputs.data, 1)
                 total += labels.size(0)
                 correct += (predicted == labels).sum().item()
-
         print(f'Accuracy of the network on the 10000 test images: {correct / total} ')
+        return correct / total
 
-net = Net()
-#net.set_params([0,0])
+
+
+
 
 """from prettytable import PrettyTable
 
@@ -88,5 +92,3 @@ def count_parameters(model):
     return total_params
     
 count_parameters(net)"""
-
-net.test()

@@ -5,7 +5,7 @@ import redis
 import time
 
 RESULTS_KEY = "results"
-HOST = '10.100.10.10'
+HOST = 'localhost'
 PORT = 6379
 DB = 0
 PASSWORD = ""
@@ -46,7 +46,7 @@ class Master(object):
             time.sleep(0.01)
         return rewards, seeds
 
-    def push_results(self, seeds, rewards):
+    def push_run(self, seeds, rewards):
         self.r.set("seeds", serialize(seeds))
         self.r.set("rewards", serialize(rewards))
         self.r.set("run_id", serialize(self.run_id))
@@ -54,9 +54,9 @@ class Master(object):
   
 
 class Worker(object):
-    def __init__(self, run_id, worker_id, lr):
+    def __init__(self, worker_id, lr):
         self.r = redis.Redis(host=HOST, port=PORT, db=DB, password=PASSWORD)
-        self.run_id = run_id
+        self.run_id = 0
         self.worker_id = worker_id
         self.learning_rate = lr
     
