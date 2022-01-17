@@ -56,11 +56,11 @@ class Net(nn.Module):
                 total += labels.size(0)
                 correct += (predicted == labels).sum().item()
 
-        print(f'Accuracy of the network on the 10000 test images: {100 * correct // total} %')
+        print(f'Accuracy of the network on the 10000 test images: {correct / total} ')
 
 net = Net()
 
-from prettytable import PrettyTable
+"""from prettytable import PrettyTable
 
 def count_parameters(model):
     table = PrettyTable(["Modules", "Parameters"])
@@ -73,4 +73,6 @@ def count_parameters(model):
     print(f"Total Trainable Params: {total_params}")
     return total_params
     
-count_parameters(net)
+count_parameters(net)"""
+
+net.test()

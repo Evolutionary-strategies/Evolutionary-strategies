@@ -8,3 +8,4 @@ def launch(nworkers, ismaster):
         
     workers = [mp.Process(target=run_worker) for x in range(0, (nworkers)//5)]
     
+launch(8, True)
