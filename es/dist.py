@@ -37,14 +37,18 @@ class Master(object):
         rewards = []
         seeds = []
         returned = 0
+        noiseless = 0
         while returned < self.nworkers:
             _, res = self.r.blpop(RESULTS_KEY)
             rew, seed = deserialize(res)
-            rewards.append(rew)
-            seeds.append(seed)
+            if(seed == -1):
+                noiseless = rew
+            else:
+                rewards.append(rew)
+                seeds.append(seed)
             returned += 1
             time.sleep(0.01)
-        return rewards, seeds
+        return rewards, seeds, noiseless
 
     def push_run(self, seeds, rewards):
         self.r.set("seeds", serialize(seeds))

@@ -1,4 +1,5 @@
-from es import run_master, run_worker, SharedNoiseTable
+from es import *
+from util import *
 import multiprocessing as mp
 import logging
 import numpy as np
@@ -10,8 +11,8 @@ def launch(nworkers, ismaster):
         master = mp.Process(target = run_master, args = (nworkers,))
         master.start()
     noise = SharedNoiseTable()
-    workers = [mp.Process(target=run_worker, args=(x,0.05,noise)) for x in range(0, nworkers)]
-    
+    workers = [mp.Process(target=run_worker, args=(x,0.1,noise)) for x in range(0, nworkers-1)]
+    workers.append(mp.Process(target=silent_worker, args=(0.1,noise)))
     for worker in workers:
         worker.start()
     
@@ -22,4 +23,4 @@ def launch(nworkers, ismaster):
 
 
 if __name__ == '__main__':    
-    launch(7, True)
+    launch(5, True)
