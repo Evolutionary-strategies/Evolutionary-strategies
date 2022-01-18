@@ -24,10 +24,10 @@ classes = ('plane', 'car', 'bird', 'cat',
 class Net(nn.Module):
     def __init__(self):
         super().__init__()
-        self.conv1 = nn.Conv2d(3, 3, kernel_size=(3,3))
-        self.conv2 = nn.Conv2d(3, 6, kernel_size=(3,3))
+        self.conv1 = nn.Conv2d(3, 64, kernel_size=(3,3))
+        self.conv2 = nn.Conv2d(64, 128, kernel_size=(3,3))
         self.pool = nn.MaxPool2d(2, 2)
-        self.fc1 = nn.Linear(1176, 128)
+        self.fc1 = nn.Linear(1176, 128)#???
         self.fc2 = nn.Linear(128, 10)
         for param in self.parameters():
             param.requires_grad = False
