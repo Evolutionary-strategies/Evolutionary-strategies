@@ -13,6 +13,10 @@ transform = transforms.Compose(
 
 batch_size = 4
 
+trainset = torchvision.datasets.CIFAR10(root='./data', train=True,
+                                        download=False, transform=transform)
+trainloader = torch.utils.data.DataLoader(trainset, batch_size=batch_size,
+                                          shuffle=True, num_workers=0)
 testset = torchvision.datasets.CIFAR10(root='./data', train=False,
                                        download=False, transform=transform)
 testloader = torch.utils.data.DataLoader(testset, batch_size=batch_size,
@@ -21,13 +25,16 @@ testloader = torch.utils.data.DataLoader(testset, batch_size=batch_size,
 classes = ('plane', 'car', 'bird', 'cat',
            'deer', 'dog', 'frog', 'horse', 'ship', 'truck')
 
+
+
+
 class Net(nn.Module):
     def __init__(self):
         super().__init__()
         self.conv1 = nn.Conv2d(3, 64, kernel_size=(3,3))
         self.conv2 = nn.Conv2d(64, 128, kernel_size=(3,3))
         self.pool = nn.MaxPool2d(2, 2)
-        self.fc1 = nn.Linear(1176, 128)#???
+        self.fc1 = nn.Linear(1176, 128)#Må fikses på
         self.fc2 = nn.Linear(128, 10)
         for param in self.parameters():
             param.requires_grad = False
@@ -40,17 +47,13 @@ class Net(nn.Module):
         x = self.fc2(x)
         return x
 
-    # kilde: https://discuss.pytorch.org/t/how-to-manually-set-the-weights-in-a-two-layer-linear-model/45902
-    # Ikke testa!
+
     def set_params(self, params):
         with torch.no_grad():
             self.conv1.weight = torch.nn.Parameter(torch.from_numpy(params[0:81]).reshape(3,3,3,3).float())
             self.conv2.weight = torch.nn.Parameter(torch.from_numpy(params[81:243]).reshape(6,3,3,3).float())
             
             
-        
-    # kilde: https://discuss.pytorch.org/t/how-to-output-weight/2796
-    # Printer, men vet ikke om det er "riktige" tensorer den printer
     def print_layers(self):
         for param in self.parameters():
             print(param.data)
@@ -77,21 +80,6 @@ class Net(nn.Module):
                 correct += (predicted == labels).sum().item()
         print(f'Accuracy of the network on the 10000 test images: {correct / total} ')
         return correct / total
-    
-    
-    #Treningsmetoder til GD:
-
-    # Predictor
-    def f(self, x):
-        return torch.softmax(self.forward(x), dim=1)
-
-    # Cross Entropy loss
-    def loss(self, x, y):
-        return nn.functional.cross_entropy(self.forward(x), y.argmax(1))
-
-    # Accuracy
-    def accuracy(self, x, y):
-        return torch.mean(torch.eq(self.f(x).argmax(1), y.argmax(1)).float())
 
 
 
@@ -110,44 +98,47 @@ def load_gd_model(path = "../models/example.pt"):
     return net
 
 
-# funker ikke :((
 def train_gd_model():
     print("Training Gradient decent model")
     # torch.set_num_threads(7) #Endre på denne?
 
-    cifar_data = torchvision.datasets.CIFAR10(root='./data', train=True,
-                                       download=True, transform=transform)
-    x_train = torch.tensor(cifar_data.data.reshape(-1, 3, 32, 32)).float()
-    y_train = torch.zeros((len(cifar_data.targets), 10))
-    cifar_test = torchvision.datasets.CIFAR10(root='./data', train=False,
-                                       download=True, transform=transform)
-    x_test = torch.tensor(cifar_test.data.reshape(-1, 3, 32, 32)).float()
-    y_test= torch.zeros((len(cifar_test.targets), 10))
-
-    print(x_train.shape)
-    print(y_train.shape)
-    print()
-    print(x_test.shape)
-    print(y_test.shape)
-    print()
-
-    batches = 500
-    x_train_batches = torch.split(x_train, batches)
-    y_train_batches = torch.split(y_train, batches)
-
     net = Net()
+    criterion = nn.CrossEntropyLoss()
+    optimizer = torch.optim.SGD(net.parameters(), lr=0.001, momentum=0.9)
+
+    
     optimizer = torch.optim.Adam(net.parameters(), 0.05)
 
-    for epoch in range(10):
-        for batch in range(len(x_train_batches)):
-            net.loss(x_train_batches[batch], y_train_batches[batch]).backward()  # Compute loss gradients
-            optimizer.step()  # Perform optimization by adjusting W and b,
-            optimizer.zero_grad()  # Clear gradients for next step
+    for epoch in range(1):  # loop over the dataset multiple times
+        running_loss = 0.0
+        for i, data in enumerate(trainloader, 0):
+            # get the inputs; data is a list of [inputs, labels]
+            inputs, labels = data
 
-        print("accuracy = %s" % net.accuracy(x_test, y_test))
-    print("Finished")
+            # zero the parameter gradients
+            optimizer.zero_grad()
+
+            # forward + backward + optimize
+            outputs = net(inputs)
+            loss = criterion(outputs, labels)
+            loss.backward()
+            optimizer.step()
+
+            # print statistics
+            running_loss += loss.item()
+            if i % 2000 == 1999:    # print every 2000 mini-batches
+                print(f'[{epoch + 1}, {i + 1:5d}] loss: {running_loss / 2000:.3f}')
+                running_loss = 0.0
+    print('Finished Training')
 
 # train_gd_model()
+
+
+
+
+
+
+
 
 """from prettytable import PrettyTable
 
