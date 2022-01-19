@@ -4,6 +4,7 @@ import torchvision.transforms as transforms
 import torch.nn as nn
 import torch.nn.functional as F
 import numpy as np
+import os
 torch.set_num_threads(1)
 
 
@@ -107,12 +108,10 @@ def load_gd_model(path = "../models/example.pt"):
 
 def train(net):
     print("Training Gradient decent model")
-    # torch.set_num_threads(7) #Endre på denne?
-
+    torch.set_num_threads(os.cpu_count())
 
     criterion = nn.CrossEntropyLoss()
     optimizer = torch.optim.SGD(net.parameters(), lr=0.001, momentum=0.9)
-
 
     for epoch in range(5):  # loop over the dataset multiple times
         running_loss = 0.0
@@ -136,13 +135,11 @@ def train(net):
                 running_loss = 0.0
     print('Finished Training')
 
-# train_gd_model()
-
-
-"""net = Net()
+"""
+net = Net()
 train(net)
-net.test()"""
-
+net.test()
+"""
 
 '''
 
