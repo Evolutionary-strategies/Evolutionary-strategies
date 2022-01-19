@@ -34,13 +34,13 @@ class Net(nn.Module):
         self.conv1 = nn.Conv2d(3, 64, kernel_size=(3,3))
         self.conv2 = nn.Conv2d(64, 128, kernel_size=(3,3))
         self.pool = nn.MaxPool2d(2, 2)
-        self.fc1 = nn.Linear(1176, 128)#Må fikses på
+        self.fc1 = nn.Linear(4608, 128)#???
         self.fc2 = nn.Linear(128, 10)
-        for param in self.parameters():
-            param.requires_grad = False
+        """for param in self.parameters():
+            param.requires_grad = False"""
 
     def forward(self, x):
-        x = F.relu(self.conv1(x))
+        x = self.pool(F.relu(self.conv1(x)))
         x = self.pool(F.relu(self.conv2(x)))
         x = torch.flatten(x, 1) # flatten all dimensions except batch
         x = F.relu(self.fc1(x))
@@ -98,18 +98,16 @@ def load_gd_model(path = "../models/example.pt"):
     return net
 
 
-def train_gd_model():
+def train(net):
     print("Training Gradient decent model")
     # torch.set_num_threads(7) #Endre på denne?
 
-    net = Net()
+
     criterion = nn.CrossEntropyLoss()
     optimizer = torch.optim.SGD(net.parameters(), lr=0.001, momentum=0.9)
 
-    
-    optimizer = torch.optim.Adam(net.parameters(), 0.05)
 
-    for epoch in range(1):  # loop over the dataset multiple times
+    for epoch in range(5):  # loop over the dataset multiple times
         running_loss = 0.0
         for i, data in enumerate(trainloader, 0):
             # get the inputs; data is a list of [inputs, labels]
@@ -134,13 +132,16 @@ def train_gd_model():
 # train_gd_model()
 
 
+"""net = Net()
+train(net)
+net.test()"""
 
 
 
 
 
+from prettytable import PrettyTable
 
-"""from prettytable import PrettyTable
 
 def count_parameters(model):
     table = PrettyTable(["Modules", "Parameters"])
@@ -152,5 +153,5 @@ def count_parameters(model):
     print(table)
     print(f"Total Trainable Params: {total_params}")
     return total_params
-    
-count_parameters(net)"""
+net = Net()   
+count_parameters(net)
