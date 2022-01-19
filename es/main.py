@@ -7,12 +7,13 @@ import numpy as np
 
 def launch(nworkers, ismaster):
     mp.log_to_stderr(logging.DEBUG)
+    sigma = 0.1
     if ismaster:
         master = mp.Process(target = run_master, args = (nworkers,))
         master.start()
     noise = SharedNoiseTable()
-    workers = [mp.Process(target=run_worker, args=(x,0.1,noise)) for x in range(0, nworkers-1)]
-    workers.append(mp.Process(target=silent_worker, args=(0.1,noise)))
+    workers = [mp.Process(target=run_worker, args=(x,0.1,noise, sigma, nworkers)) for x in range(0, nworkers-1)]
+    workers.append(mp.Process(target=silent_worker, args=(0.1,noise, sigma, nworkers)))
     for worker in workers:
         worker.start()
     

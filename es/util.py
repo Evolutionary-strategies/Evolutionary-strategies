@@ -6,8 +6,9 @@ def softmax(x):
     return f_x
 
 def evaluate_fitnesses(rewards, noiseless_reward):
-    rewards = [(x - noiseless_reward) * 100 for x in rewards]
+    rewards = (rewards - np.mean(rewards)) / np.std(rewards)
     return softmax(rewards)
+    #return rewards
 
 class SharedNoiseTable(object):
     def __init__(self):
@@ -23,13 +24,13 @@ class SharedNoiseTable(object):
         return self.noise[i:i + dim]
 
 
-def calc_evolution(results, length, noise, lr):
+def calc_evolution(results, length, noise, lr, sigma, nworkers):
     evo = np.zeros(length)
     rews = results[0]
     seeds = results[1]
     for seed, reward in zip(seeds, rews):
         evo += reward * noise.get(int(seed), length)
-    return (lr/length * evo)
+    return (lr/(sigma*nworkers) * evo)
 
 
 def genseeds(nworkers):
