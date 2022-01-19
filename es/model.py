@@ -50,8 +50,8 @@ class Net(nn.Module):
 
     def set_params(self, params):
         with torch.no_grad():
-            self.conv1.weight = torch.nn.Parameter(torch.from_numpy(params[0:81]).reshape(3,3,3,3).float())
-            self.conv2.weight = torch.nn.Parameter(torch.from_numpy(params[81:243]).reshape(6,3,3,3).float())
+            self.conv1.weight = torch.nn.Parameter(torch.from_numpy(params[0:1726]).reshape(3,64,3,3).float())
+            self.conv2.weight = torch.nn.Parameter(torch.from_numpy(params[1726:75454]).reshape(64,128,3,3).float())
             
             
     def print_layers(self):
