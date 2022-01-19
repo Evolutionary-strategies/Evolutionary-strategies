@@ -36,8 +36,8 @@ class Net(nn.Module):
         self.pool = nn.MaxPool2d(2, 2)
         self.fc1 = nn.Linear(4608, 128)#???
         self.fc2 = nn.Linear(128, 10)
-        """for param in self.parameters():
-            param.requires_grad = False"""
+        for param in self.parameters():
+            param.requires_grad = False
 
     def forward(self, x):
         x = self.pool(F.relu(self.conv1(x)))
@@ -49,9 +49,16 @@ class Net(nn.Module):
 
 
     def set_params(self, params):
+        c1 = 1728
+        c2 = 73728 + c1
+        f1 = 589824 + c2
+        f2 = 1280 + f1
+
         with torch.no_grad():
-            self.conv1.weight = torch.nn.Parameter(torch.from_numpy(params[0:1726]).reshape(3,64,3,3).float())
-            self.conv2.weight = torch.nn.Parameter(torch.from_numpy(params[1726:75454]).reshape(64,128,3,3).float())
+            self.conv1.weight = torch.nn.Parameter(torch.from_numpy(params[0:c1]).reshape(64,3,3,3).float())
+            self.conv2.weight = torch.nn.Parameter(torch.from_numpy(params[c1:c2]).reshape(128,64,3,3).float())
+            self.fc1.weight = torch.nn.Parameter(torch.from_numpy(params[c2:f1]).reshape(128, 4608).float())
+            self.fc2.weight = torch.nn.Parameter(torch.from_numpy(params[f1:f2]).reshape(10, 128).float())
             
             
     def print_layers(self):
@@ -137,8 +144,7 @@ train(net)
 net.test()"""
 
 
-
-
+'''
 
 from prettytable import PrettyTable
 
@@ -154,4 +160,4 @@ def count_parameters(model):
     print(f"Total Trainable Params: {total_params}")
     return total_params
 net = Net()   
-count_parameters(net)
+count_parameters(net)'''

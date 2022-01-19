@@ -15,13 +15,14 @@ def run_master(nworkers):
         seeds = genseeds(nworkers)
         master.push_run(seeds, results)
         results = master.wait_for_results()
+        print("Finished waiting for results")
         results = (evaluate_fitnesses(results[0], results[2]), results[1])
 
 
 def silent_worker(lr, noise):
     worker = Worker(-1, lr)
     net = Net()
-    params = np.zeros(243)
+    params = np.zeros(666560)
     while True:
         results, seeds = worker.poll_run()
         params += calc_evolution(results, len(params), noise, worker.learning_rate)
@@ -33,7 +34,7 @@ def silent_worker(lr, noise):
 def run_worker(id, lr, noise):
     worker = Worker(id, lr)
     net = Net()
-    params = np.zeros(243)
+    params = np.zeros(666560) # øke denne?
     seeds = np.zeros(500)
     while True:
         results, seeds = worker.poll_run()
