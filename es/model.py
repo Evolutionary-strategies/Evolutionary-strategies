@@ -37,8 +37,8 @@ class Net(nn.Module):
         self.pool = nn.MaxPool2d(2, 2)
         self.fc1 = nn.Linear(4608, 128)#???
         self.fc2 = nn.Linear(128, 10)
-        for param in self.parameters():
-            param.requires_grad = False
+        """for param in self.parameters():
+            param.requires_grad = False"""
 
     def forward(self, x):
         x = self.pool(F.relu(self.conv1(x)))
@@ -98,7 +98,6 @@ def load_es_model(params, path = "../models/example.pt"):
     net.set_params(params)
     return net
 
-#Utesta
 def load_gd_model(path = "../models/example.pt"):
     net = Net()
     net.load_state_dict(torch.load(path))
@@ -135,11 +134,9 @@ def train(net):
                 running_loss = 0.0
     print('Finished Training')
 
-"""
-net = Net()
-train(net)
+
+net = load_gd_model()
 net.test()
-"""
 
 '''
 
