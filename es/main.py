@@ -3,7 +3,9 @@ from util import *
 import multiprocessing as mp
 import logging
 import numpy as np
-
+logging.basicConfig()
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
 
 def launch(nworkers, ismaster):
     mp.log_to_stderr(logging.DEBUG)
@@ -12,8 +14,8 @@ def launch(nworkers, ismaster):
         master = mp.Process(target = run_master, args = (nworkers,))
         master.start()
     noise = SharedNoiseTable()
-    workers = [mp.Process(target=run_worker, args=(x,0.1,noise, sigma, nworkers)) for x in range(0, nworkers-1)]
-    workers.append(mp.Process(target=silent_worker, args=(0.1,noise, sigma, nworkers)))
+    workers = [mp.Process(target=run_worker, args=(x,0.1,noise, sigma, nworkers)) for x in range(0, nworkers)]
+    #workers.append(mp.Process(target=silent_worker, args=(0.1,noise, sigma, nworkers)))
     for worker in workers:
         worker.start()
     

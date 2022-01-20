@@ -3,10 +3,12 @@ import torchvision
 import torchvision.transforms as transforms
 import torch.nn as nn
 import torch.nn.functional as F
-import numpy as np
 import os
 torch.set_num_threads(1)
-
+import logging
+logging.basicConfig()
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
 
 transform = transforms.Compose(
     [transforms.ToTensor(),
@@ -69,6 +71,7 @@ class Net(nn.Module):
     def save_model(self, name = "example"):
         path = "../models/" + name + ".pt"
         torch.save(self.state_dict(), path)
+        logger.info("saved model")
 
     def test(self):
         dataiter = iter(testloader)
@@ -135,8 +138,7 @@ def train(net):
     print('Finished Training')
 
 
-net = load_gd_model()
-net.test()
+
 
 '''
 

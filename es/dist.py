@@ -1,14 +1,18 @@
 import numpy as np
 import pickle
-import random
 import redis
 import time
-
+import logging
+logging.basicConfig()
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
 RESULTS_KEY = "results"
 HOST = 'localhost'
 PORT = 6379
 DB = 0
 PASSWORD = ""
+
+
 
 
 def serialize(x):
@@ -29,7 +33,7 @@ class Master(object):
         self.nworkers = nworkers
 
         for key in self.r.scan_iter():
-            print("deleting key", key)
+            logger.info(f"deleting key: {key}")
             self.r.delete(key)
 
     def wait_for_results(self):
@@ -41,11 +45,14 @@ class Master(object):
         while returned < self.nworkers:
             _, res = self.r.blpop(RESULTS_KEY)
             rew, seed = deserialize(res)
-            if(seed == -1):
+            """if(seed == -1):
                 noiseless = rew
             else:
                 rewards.append(rew)
                 seeds.append(seed)
+                """
+            rewards.append(rew)
+            seeds.append(seed)
             returned += 1
             time.sleep(0.01)
         return rewards, seeds, noiseless
