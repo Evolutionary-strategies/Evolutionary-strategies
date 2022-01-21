@@ -1,3 +1,4 @@
+from cgi import test
 import torch
 import torchvision
 import torchvision.transforms as transforms
@@ -74,9 +75,10 @@ class Net(nn.Module):
         logger.info("saved model")
 
     def test(self):
+        loss_fn=nn.CrossEntropyLoss()
         dataiter = iter(testloader)
         images, labels = dataiter.next()
-
+        running_loss=0
         correct = 0
         total = 0
         # since we're not training, we don't need to calculate the gradients for our outputs
@@ -87,10 +89,13 @@ class Net(nn.Module):
                 outputs = self(images)
                 # the class with the highest energy is what we choose as prediction
                 _, predicted = torch.max(outputs.data, 1)
+                loss= loss_fn(outputs,labels)
+                running_loss+=loss.item()
                 total += labels.size(0)
                 correct += (predicted == labels).sum().item()
-        print(f'Accuracy of the network on the 10000 test images: {correct / total} ')
-        return correct / total
+        test_loss=running_loss/len(testloader)
+        logger.info(f'Accuracy: {correct / total}, Loss: {test_loss:.3f} ')
+        return (-test_loss)
 
 
 
