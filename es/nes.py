@@ -22,10 +22,10 @@ def run_master(nworkers):
         
 
 
-def silent_worker(lr, noise, sigma, nworkers):
+def silent_worker(lr, noise, sigma, nworkers, theta_0):
     worker = Worker(-1, lr)
     net = Net()
-    params = np.zeros(666560)
+    params = theta_0
     while True:
         results, seeds = worker.poll_run()
         params += calc_evolution(results, len(params), noise, worker.learning_rate, sigma, nworkers)     
@@ -37,10 +37,10 @@ def silent_worker(lr, noise, sigma, nworkers):
         print(f"noiseless reward: {reward}")
         worker.send_result(reward, -1)
 
-def run_worker(id, lr, noise, sigma, nworkers):
+def run_worker(id, lr, noise, sigma, nworkers, theta_0):
     worker = Worker(id, lr)
     net = Net()
-    params = np.zeros(666560) # øke denne?
+    params = theta_0 # øke denne?
     seeds = np.zeros(500)
     while True:
         results, seeds = worker.poll_run()

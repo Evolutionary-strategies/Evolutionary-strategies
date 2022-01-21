@@ -94,7 +94,8 @@ class Net(nn.Module):
                 total += labels.size(0)
                 correct += (predicted == labels).sum().item()
         test_loss=running_loss/len(testloader)
-        logger.info(f'Accuracy: {correct / total}, Loss: {test_loss:.3f} ')
+        accuracy = correct / total
+        logger.info(f'Accuracy: {correct / total}, Loss: {-test_loss:.3f} ')
         return (-test_loss)
 
 
