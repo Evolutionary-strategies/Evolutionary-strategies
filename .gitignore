@@ -1,7 +1,5 @@
 /es/data/*
 /es/data/
 /es/data
-/models/*
-/models/
-/models
-dump.rdb
+*.pt
+*.rdb

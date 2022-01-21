@@ -1,9 +1,9 @@
-from cgi import test
 import torch
 import torchvision
 import torchvision.transforms as transforms
 import torch.nn as nn
 import torch.nn.functional as F
+from pathlib import Path
 import os
 torch.set_num_threads(1)
 import logging
@@ -69,10 +69,14 @@ class Net(nn.Module):
         for param in self.parameters():
             print(param.data)
 
-    def save_model(self, name = "example"):
-        path = "../models/" + name + ".pt"
-        torch.save(self.state_dict(), path)
-        logger.info("saved model")
+    def save_model(self, name = "example.pt"):
+        model_folder_path = '../models'
+        if not os.path.exists(model_folder_path):
+            os.makedirs(model_folder_path)
+        
+        name = os.path.join(model_folder_path, name)
+        torch.save(self.state_dict(), name)
+
 
     def test(self):
         loss_fn=nn.CrossEntropyLoss()
@@ -142,7 +146,6 @@ def train(net):
                 print(f'[{epoch + 1}, {i + 1:5d}] loss: {running_loss / 2000:.3f}')
                 running_loss = 0.0
     print('Finished Training')
-
 
 
 
