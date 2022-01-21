@@ -32,7 +32,7 @@ def silent_worker(lr, noise, sigma, nworkers, theta_0):
         print(f"evolution: {calc_evolution(results, len(params), noise, worker.learning_rate, sigma, nworkers)}")   
         net.set_params(params)
         reward = net.test()
-        if worker.run_id % 100 == 0:
+        if worker.run_id % 100 == 1:
             net.save_model("nes_model.pt")
         print(f"noiseless reward: {reward}")
         worker.send_result(reward, -1)
@@ -45,7 +45,7 @@ def run_worker(id, lr, noise, sigma, nworkers, theta_0):
     while True:
         results, seeds = worker.poll_run()
         params += calc_evolution(results, len(params), noise, worker.learning_rate, sigma, nworkers)
-        if worker.run_id % 100 == 0 and worker.worker_id == 1:
+        if worker.run_id % 100 == 1 and worker.worker_id == 1:
             net.save_model("nes_model.pt")
         perturbed_params = params + sigma * noise.get(seeds[worker.worker_id], len(params))
         net.set_params(perturbed_params)
