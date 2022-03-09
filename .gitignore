@@ -8,3 +8,7 @@ dump.rdb
 /logs
 /logs/
 /logs/*
+*.pt
+*.log
+*.rdb
+/__pycache__

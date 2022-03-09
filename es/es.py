@@ -28,8 +28,8 @@ def run_master(nworkers):
         print(f"evolution: {calc_evolution(results, len(params), noise, worker.learning_rate, sigma, nworkers)}")   
         net.set_params(params)
         reward = net.test()
-        if worker.run_id % 100 == 0:
-            net.save_model("es_model")
+        if worker.run_id % 100 == 1:
+            net.save_model("nes_model.pt")
         print(f"noiseless reward: {reward}")
         worker.send_result(reward, -1)"""
 
