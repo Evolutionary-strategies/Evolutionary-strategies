@@ -3,7 +3,10 @@ from dist import Master, Worker
 from model import Net
 from util import *
 import logging
-logging.basicConfig(filename="logs/accuracy.log", encoding='utf-8', level=logging.INFO)
+
+
+
+logging.basicConfig()
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
@@ -41,7 +44,8 @@ def run_worker(id, lr, noise, sigma, nworkers, theta_0):
     while True:
         results, seeds = worker.poll_run()
         params += calc_evolution(results, len(params), noise, worker.learning_rate, sigma, nworkers)
-        if worker.run_id % 100 == 1 and worker.worker_id == 1:
+        
+        if  worker.run_id % 100 == 1 and worker.worker_id == 1:
             net.save_model("es_model.pt")
             logger.info(f"run: {worker.run_id}")
             worker.send_result(net.test(log=True), seeds[worker.worker_id])

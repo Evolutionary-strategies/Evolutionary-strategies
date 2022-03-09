@@ -40,4 +40,4 @@ def launch(nworkers, ismaster):
 
 
 if __name__ == '__main__':    
-    launch(12, True)
+    launch(127, True)
