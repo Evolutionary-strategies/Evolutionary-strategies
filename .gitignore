@@ -11,4 +11,4 @@ dump.rdb
 *.pt
 *.log
 *.rdb
-/__pycache__
+es/__pycache__
