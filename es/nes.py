@@ -3,7 +3,7 @@ from dist import Master, Worker
 from model import Net
 from util import *
 import logging
-logging.basicConfig()
+logging.basicConfig(filename="logs/accuracy.log", encoding='utf-8', level=logging.INFO)
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
@@ -11,10 +11,6 @@ def run_master(nworkers):
     master = Master(nworkers)
     results = np.array([np.zeros(nworkers),np.zeros(nworkers)])
     while True:
-        logger.info("---------------------")
-        logger.info(f"run: {master.run_id}")
-        logger.info("---------------------")
-
         seeds = genseeds(nworkers)
         master.push_run(seeds, results)
         results = master.wait_for_results()

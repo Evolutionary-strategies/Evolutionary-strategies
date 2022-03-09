@@ -3,9 +3,22 @@ from util import *
 import multiprocessing as mp
 import logging
 import numpy as np
-logging.basicConfig()
+import os 
+
+
+
+log_filename = "logs/accuracy.log"
+os.makedirs(os.path.dirname(log_filename), exist_ok=True)
+file_handler = logging.FileHandler(log_filename, mode="w", encoding=None, delay=False)
+file_handler.setLevel(logging.INFO)
+
+
+for handler in logging.root.handlers[:]:
+    logging.root.removeHandler(handler)
+logging.basicConfig(filename=log_filename, encoding='utf-8')
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
+
 
 def launch(nworkers, ismaster):
     theta_0 =  np.random.uniform(-1.0, 1.0, 666560)

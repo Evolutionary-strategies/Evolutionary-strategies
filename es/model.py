@@ -98,6 +98,12 @@ class Net(nn.Module):
         logger.info(f'Accuracy: {correct / total}, Loss: {-test_loss:.3f} ')
         return (-test_loss)
 
+    def set_params_and_test(self, params):
+        self.set_params(params)
+        return self.test()
+
+
+
 
 
 #Utesta
