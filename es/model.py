@@ -70,11 +70,14 @@ class Net(nn.Module):
             print(param.data)
 
     def save_model(self, name = "example"):
-        path = "../models/" + name + ".pt"
-        torch.save(self.state_dict(), path)
-        logger.info("saved model")
+        model_folder_path = '../models'
+        if not os.path.exists(model_folder_path):
+            os.makedirs(model_folder_path)
+        
+        name = os.path.join(model_folder_path, name)
+        torch.save(self.state_dict(), name)
 
-    def test(self):
+    def test(self, log=False):
         loss_fn=nn.CrossEntropyLoss()
         dataiter = iter(testloader)
         images, labels = dataiter.next()
@@ -95,7 +98,8 @@ class Net(nn.Module):
                 correct += (predicted == labels).sum().item()
         test_loss=running_loss/len(testloader)
         accuracy = correct / total
-        logger.info(f'Accuracy: {correct / total}, Loss: {-test_loss:.3f} ')
+        if(log):
+            logger.info(f'Accuracy: {correct / total}, Loss: {test_loss:.3f} ')
         return (-test_loss)
 
     def set_params_and_test(self, params):
