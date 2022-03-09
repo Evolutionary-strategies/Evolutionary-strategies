@@ -4,6 +4,7 @@ import torchvision.transforms as transforms
 import torch.nn as nn
 import torch.nn.functional as F
 from pathlib import Path
+from util import load_data
 import os
 torch.set_num_threads(1)
 import logging
@@ -13,26 +14,12 @@ import logging
 logging.basicConfig()
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
+import numpy as np
 
-transform = transforms.Compose(
-    [transforms.ToTensor(),
-     transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))])
-
-batch_size = 4
-
-trainset = torchvision.datasets.CIFAR10(root='./data', train=True,
-                                        download=False, transform=transform)
-trainloader = torch.utils.data.DataLoader(trainset, batch_size=batch_size,
-                                          shuffle=True, num_workers=0)
-testset = torchvision.datasets.CIFAR10(root='./data', train=False,
-                                       download=False, transform=transform)
-testloader = torch.utils.data.DataLoader(testset, batch_size=batch_size,
-                                         shuffle=False, num_workers=0)
-
-classes = ('plane', 'car', 'bird', 'cat',
-           'deer', 'dog', 'frog', 'horse', 'ship', 'truck')
-
-
+# Loading data:
+loader = load_data()
+testloader = loader[1]
+trainloader = loader[0]
 
 
 class Net(nn.Module):
@@ -113,14 +100,9 @@ class Net(nn.Module):
 
 
 
-#Utesta
-def load_es_model(params, path = "../models/example.pt"):
-    net = Net()
-    net.load_state_dict(torch.load(path))
-    net.set_params(params)
-    return net
 
-def load_gd_model(path = "../models/example.pt"):
+def load_model(path = "../models/example.pt"):
+    print("Loading model")
     net = Net()
     net.load_state_dict(torch.load(path))
     net.eval()
@@ -159,10 +141,7 @@ def train(net):
 
 
 '''
-
 from prettytable import PrettyTable
-
-
 def count_parameters(model):
     table = PrettyTable(["Modules", "Parameters"])
     total_params = 0
