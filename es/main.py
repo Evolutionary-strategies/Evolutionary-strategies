@@ -15,7 +15,7 @@ file_handler.setLevel(logging.INFO)
 
 for handler in logging.root.handlers[:]:
     logging.root.removeHandler(handler)
-logging.basicConfig(filename=log_filename, encoding='utf-8')
+logging.basicConfig(filename=log_filename)
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
