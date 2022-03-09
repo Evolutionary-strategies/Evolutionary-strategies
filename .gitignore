@@ -5,3 +5,6 @@
 /models/
 /models
 dump.rdb
+/logs
+/logs/
+/logs/*
