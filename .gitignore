@@ -5,3 +5,10 @@
 /models/
 /models
 dump.rdb
+/logs
+/logs/
+/logs/*
+*.pt
+*.log
+*.rdb
+es/__pycache__

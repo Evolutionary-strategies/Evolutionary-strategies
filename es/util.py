@@ -10,8 +10,8 @@ def softmax(x):
 
 def evaluate_fitnesses(rewards, noiseless_reward):
     rewards = (rewards - np.mean(rewards)) / np.std(rewards)
-    return softmax(rewards)
-    #return rewards
+    #return softmax(rewards)
+    return rewards
 
 class SharedNoiseTable(object):
     def __init__(self):

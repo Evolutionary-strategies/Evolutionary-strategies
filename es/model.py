@@ -3,10 +3,14 @@ import torchvision
 import torchvision.transforms as transforms
 import torch.nn as nn
 import torch.nn.functional as F
+from pathlib import Path
 from util import load_data
 import os
 torch.set_num_threads(1)
 import logging
+
+
+
 logging.basicConfig()
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
@@ -55,15 +59,19 @@ class Net(nn.Module):
         for param in self.parameters():
             print(param.data)
 
-    def save_model(self, name = "example"):
-        path = "../models/" + name + ".pt"
-        torch.save(self.state_dict(), path)
-        logger.info("saved model")
+    def save_model(self, name = "example.pt"):
+        model_folder_path = '../models'
+        if not os.path.exists(model_folder_path):
+            os.makedirs(model_folder_path)
+        
+        name = os.path.join(model_folder_path, name)
+        torch.save(self.state_dict(), name)
 
-    def test(self):
+    def test(self, log=False):
+        loss_fn=nn.CrossEntropyLoss()
         dataiter = iter(testloader)
         images, labels = dataiter.next()
-
+        running_loss=0
         correct = 0
         total = 0
         # since we're not training, we don't need to calculate the gradients for our outputs
@@ -74,10 +82,21 @@ class Net(nn.Module):
                 outputs = self(images)
                 # the class with the highest energy is what we choose as prediction
                 _, predicted = torch.max(outputs.data, 1)
+                loss= loss_fn(outputs,labels)
+                running_loss+=loss.item()
                 total += labels.size(0)
                 correct += (predicted == labels).sum().item()
-        print(f'Accuracy of the network on the 10000 test images: {correct / total} ')
-        return correct / total
+        test_loss=running_loss/len(testloader)
+        accuracy = correct / total
+        if(log):
+            logger.info(f'Accuracy: {correct / total}, Loss: {test_loss:.3f} ')
+        return (-test_loss)
+
+    def set_params_and_test(self, params):
+        self.set_params(params)
+        return self.test()
+
+
 
 
 
