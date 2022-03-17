@@ -39,7 +39,7 @@ def run_master(nworkers):
 def run_worker(id, lr, noise, sigma, nworkers, theta_0):
     worker = Worker(id, lr)
     net = Net()
-    params = theta_0 # øke denne?
+    params = theta_0
     seeds = np.zeros(500)
     while True:
         results, seeds = worker.poll_run()

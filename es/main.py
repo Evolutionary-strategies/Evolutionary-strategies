@@ -1,5 +1,6 @@
 from es import *
 from util import *
+from model import *
 import multiprocessing as mp
 import logging
 import numpy as np
@@ -20,8 +21,22 @@ logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
 
-def launch(nworkers, ismaster):
-    theta_0 =  np.random.uniform(-1.0, 1.0, 666560)
+def launch(nworkers, ismaster, loadparams=False):
+    if loadparams:
+        net = load_model("../models/nes_model1.pt")
+        theta_0 = np.concatenate((
+            net.conv1.weight.detach().numpy().flatten(),
+            net.conv1.bias.detach().numpy().flatten(),
+            net.conv2.weight.detach().numpy().flatten(), 
+            net.conv2.bias.detach().numpy().flatten(), 
+            net.fc1.weight.detach().numpy().flatten(), 
+            net.fc1.bias.detach().numpy().flatten(), 
+            net.fc2.weight.detach().numpy().flatten(),         
+            net.fc2.bias.detach().numpy().flatten()
+            ))
+
+    else:
+        theta_0 =  np.random.uniform(-1.0, 1.0, 666890) #666890
     mp.log_to_stderr(logging.DEBUG)
     sigma = 0.1
     if ismaster:
@@ -40,4 +55,5 @@ def launch(nworkers, ismaster):
 
 
 if __name__ == '__main__':    
-    launch(127, True)
+    launch(127, True,True)
+    
