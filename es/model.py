@@ -30,8 +30,8 @@ class Net(nn.Module):
         self.pool = nn.MaxPool2d(2, 2)
         self.fc1 = nn.Linear(4608, 128)#???
         self.fc2 = nn.Linear(128, 10)
-        """for param in self.parameters():
-            param.requires_grad = False"""
+        for param in self.parameters():
+            param.requires_grad = False
 
     def forward(self, x):
         x = self.pool(F.relu(self.conv1(x)))
@@ -44,16 +44,27 @@ class Net(nn.Module):
 
     def set_params(self, params):
         c1 = 1728
-        c2 = 73728 + c1
-        f1 = 589824 + c2
-        f2 = 1280 + f1
+        c1_b = c1 + 64
+        c2 = 73728 + c1_b
+        c2_b = c2 + 128
+        f1 = 589824 + c2_b
+        f1_b = f1 + 128
+        f2 = 1280 + f1_b
+        f2_b = f2+10
 
         with torch.no_grad():
             self.conv1.weight = torch.nn.Parameter(torch.from_numpy(params[0:c1]).reshape(64,3,3,3).float())
-            self.conv2.weight = torch.nn.Parameter(torch.from_numpy(params[c1:c2]).reshape(128,64,3,3).float())
-            self.fc1.weight = torch.nn.Parameter(torch.from_numpy(params[c2:f1]).reshape(128, 4608).float())
-            self.fc2.weight = torch.nn.Parameter(torch.from_numpy(params[f1:f2]).reshape(10, 128).float())
-            
+            self.conv1.bias = torch.nn.Parameter(torch.from_numpy(params[c1:c1_b]).reshape(64).float())
+
+            self.conv2.weight = torch.nn.Parameter(torch.from_numpy(params[c1_b:c2]).reshape(128,64,3,3).float())
+            self.conv2.bias = torch.nn.Parameter(torch.from_numpy(params[c2:c2_b]).reshape(128).float())
+
+            self.fc1.weight = torch.nn.Parameter(torch.from_numpy(params[c2_b:f1]).reshape(128, 4608).float())
+            self.fc1.bias = torch.nn.Parameter(torch.from_numpy(params[f1:f1_b]).reshape(128).float())
+
+            self.fc2.weight = torch.nn.Parameter(torch.from_numpy(params[f1_b:f2]).reshape(10, 128).float())
+            self.fc2.bias = torch.nn.Parameter(torch.from_numpy(params[f2:f2_b]).reshape(10).float())
+
             
     def print_layers(self):
         for param in self.parameters():
@@ -97,17 +108,14 @@ class Net(nn.Module):
         return self.test()
 
 
-
-
-
-
 def load_model(path = "../models/example.pt"):
     print("Loading model")
     net = Net()
     net.load_state_dict(torch.load(path))
     net.eval()
+    for param in net.parameters():
+            param.requires_grad = False
     return net
-
 
 def train(net):
     print("Training Gradient decent model")

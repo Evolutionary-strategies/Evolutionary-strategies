@@ -1,4 +1,5 @@
 import numpy as np
+from model import *
 import torch
 import torchvision
 import torchvision.transforms as transforms
@@ -60,3 +61,4 @@ def load_data():
             'deer', 'dog', 'frog', 'horse', 'ship', 'truck')
 
     return (trainloader, testloader)
+
