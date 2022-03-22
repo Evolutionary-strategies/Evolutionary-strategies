@@ -53,7 +53,13 @@ def launch(nworkers, ismaster, loadparams=False):
     if ismaster:
         master.join()
 
+def gd_testing():
+    net = load_model()
+    acc = net.test(True)
+    logger.info(acc)
+    print(acc)
+    
 
 if __name__ == '__main__':    
     launch(127, True,True)
-    
+    # gd_testing()

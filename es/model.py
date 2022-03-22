@@ -109,7 +109,7 @@ class Net(nn.Module):
 
 
 def load_model(path = "../models/example.pt"):
-    print("Loading model")
+    logger.info("Loading model")
     net = Net()
     net.load_state_dict(torch.load(path))
     net.eval()
@@ -118,7 +118,7 @@ def load_model(path = "../models/example.pt"):
     return net
 
 def train(net):
-    print("Training Gradient decent model")
+    logger.info("Training Gradient decent model")
     torch.set_num_threads(os.cpu_count())
 
     criterion = nn.CrossEntropyLoss()
@@ -142,9 +142,11 @@ def train(net):
             # print statistics
             running_loss += loss.item()
             if i % 2000 == 1999:    # print every 2000 mini-batches
-                print(f'[{epoch + 1}, {i + 1:5d}] loss: {running_loss / 2000:.3f}')
+                logger.info(f'[{epoch + 1}, {i + 1:5d}] loss: {running_loss / 2000:.3f}')
                 running_loss = 0.0
-    print('Finished Training')
+    logger.info('Finished Training')
+
+
 
 
 
