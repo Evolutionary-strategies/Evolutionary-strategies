@@ -58,5 +58,5 @@ def gd_testing():
     train(net, acc_limit=0.5)
 
 if __name__ == '__main__':   
-    launch(2, True,True)
+    launch(127, True,True)
     
