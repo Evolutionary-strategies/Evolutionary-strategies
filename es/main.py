@@ -23,7 +23,7 @@ logger.setLevel(logging.INFO)
 
 def launch(nworkers, ismaster, loadparams=False):
     if loadparams:
-        net = load_model("../models/nes_model1.pt")
+        net = load_model("../models/starting_weights.pt")
         theta_0 = np.concatenate((
             net.conv1.weight.detach().numpy().flatten(),
             net.conv1.bias.detach().numpy().flatten(),
@@ -38,7 +38,7 @@ def launch(nworkers, ismaster, loadparams=False):
     else:
         theta_0 =  np.random.uniform(-1.0, 1.0, 666890) #666890
     mp.log_to_stderr(logging.DEBUG)
-    sigma = 0.1
+    sigma = 0.15
     if ismaster:
         master = mp.Process(target = run_master, args = (nworkers,))
         master.start()
@@ -57,6 +57,6 @@ def gd_testing():
     net = Net(True)
     train(net, acc_limit=0.5)
 
-if __name__ == '__main__':    
-    launch(127, True,True)
-    # gd_testing()
+if __name__ == '__main__':   
+    launch(2, True,True)
+    

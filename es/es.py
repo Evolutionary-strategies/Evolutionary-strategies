@@ -46,7 +46,7 @@ def run_worker(id, lr, noise, sigma, nworkers, theta_0):
         params += calc_evolution(results, len(params), noise, worker.learning_rate, sigma, nworkers)
         
         if  worker.run_id % 100 == 1 and worker.worker_id == 1:
-            net.save_model("es_model.pt")
+            net.save_model("nes_model_sigma015.pt")
             logger.info(f"run: {worker.run_id}")
             worker.send_result(net.test(log=True), seeds[worker.worker_id])
         else:
