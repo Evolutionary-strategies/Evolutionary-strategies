@@ -1,5 +1,5 @@
 import numpy as np
-from model import *
+# from model import * # trengs denne? får en error når den er her: cannot import name 'load_data' from partially initialized module 'util' (most likely due to a circular import)
 import torch
 import torchvision
 import torchvision.transforms as transforms

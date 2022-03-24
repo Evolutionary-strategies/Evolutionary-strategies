@@ -23,7 +23,7 @@ trainloader = loader[0]
 
 
 class Net(nn.Module):
-    def __init__(self):
+    def __init__(self, requires_grad = False) -> None:
         super().__init__()
         self.conv1 = nn.Conv2d(3, 64, kernel_size=(3,3))
         self.conv2 = nn.Conv2d(64, 128, kernel_size=(3,3))
@@ -31,7 +31,7 @@ class Net(nn.Module):
         self.fc1 = nn.Linear(4608, 128)#???
         self.fc2 = nn.Linear(128, 10)
         for param in self.parameters():
-            param.requires_grad = False
+            param.requires_grad = requires_grad
 
     def forward(self, x):
         x = self.pool(F.relu(self.conv1(x)))
@@ -42,7 +42,7 @@ class Net(nn.Module):
         return x
 
 
-    def set_params(self, params):
+    def set_params(self, params) -> None:
         c1 = 1728
         c1_b = c1 + 64
         c2 = 73728 + c1_b
@@ -66,11 +66,11 @@ class Net(nn.Module):
             self.fc2.bias = torch.nn.Parameter(torch.from_numpy(params[f2:f2_b]).reshape(10).float())
 
             
-    def print_layers(self):
+    def print_layers(self) -> None:
         for param in self.parameters():
             print(param.data)
 
-    def save_model(self, name = "example.pt"):
+    def save_model(self, name = "example.pt") -> None:
         model_folder_path = '../models'
         if not os.path.exists(model_folder_path):
             os.makedirs(model_folder_path)
@@ -78,7 +78,7 @@ class Net(nn.Module):
         name = os.path.join(model_folder_path, name)
         torch.save(self.state_dict(), name)
 
-    def test(self, log=False):
+    def test(self, log=False) -> float:
         loss_fn=nn.CrossEntropyLoss()
         dataiter = iter(testloader)
         images, labels = dataiter.next()
@@ -103,13 +103,13 @@ class Net(nn.Module):
             logger.info(f'Accuracy: {correct / total}, Loss: {test_loss:.3f} ')
         return accuracy
 
-    def set_params_and_test(self, params):
+    def set_params_and_test(self, params) -> float:
         self.set_params(params)
         return self.test()
 
 
-def load_model(path = "../models/example.pt"):
-    print("Loading model")
+def load_model(path = "../models/example.pt") -> Net:
+    logger.info("Loading model")
     net = Net()
     net.load_state_dict(torch.load(path))
     net.eval()
@@ -117,8 +117,8 @@ def load_model(path = "../models/example.pt"):
             param.requires_grad = False
     return net
 
-def train(net):
-    print("Training Gradient decent model")
+def train(net, acc_limit = 1) -> None:
+    logger.info("Training Gradient decent model")
     torch.set_num_threads(os.cpu_count())
 
     criterion = nn.CrossEntropyLoss()
@@ -142,9 +142,15 @@ def train(net):
             # print statistics
             running_loss += loss.item()
             if i % 2000 == 1999:    # print every 2000 mini-batches
-                print(f'[{epoch + 1}, {i + 1:5d}] loss: {running_loss / 2000:.3f}')
+                logger.info(f'[{epoch + 1}, {i + 1:5d}] loss: {running_loss / 2000:.3f}')
                 running_loss = 0.0
-    print('Finished Training')
+
+                if acc_limit < 1:
+                    acc = net.test(True)
+                    if acc >= acc_limit:
+                        logger.info('Finished Training')
+                        return
+    logger.info('Finished Training')
 
 
 

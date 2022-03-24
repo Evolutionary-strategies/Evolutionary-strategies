@@ -53,7 +53,10 @@ def launch(nworkers, ismaster, loadparams=False):
     if ismaster:
         master.join()
 
+def gd_testing():
+    net = Net(True)
+    train(net, acc_limit=0.5)
 
 if __name__ == '__main__':   
-    launch(127, True,True, True)
+    launch(2, True,True)
     
