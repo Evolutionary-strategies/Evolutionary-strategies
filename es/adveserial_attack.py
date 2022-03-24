@@ -35,27 +35,30 @@ class Attack():
                 images, labels = data
                 raw, clipped, is_adv = attack(self.fmodel, images, labels, epsilons=eps)
                 acc += 1 - is_adv.float().mean(axis=-1)
-            accuracy.append(acc.item()/i)
-        
+            acc = acc.item()/i
+            accuracy.append(acc)
+            logger.info("Accuracy at " + str(eps) + " epsilon: " + str(acc))
         return accuracy
 
     def perform_attacks(self, attacks, epsilons = [0.03]) -> dict[list[float]]:
         results = {}
         for attack in attacks:
+            logger.info("Performing " + str(attack))
             results[attack] = self.perform(attack, epsilons)
-        logger.info(results)
+        logger.info("Results: " + str(results))
         return results
 
 
 
 def print_data(data, epsilons):
     table = PrettyTable()
-    table.field_names = ["Attack"] + epsilons
+    table.field_names = ["Attack"] + list(epsilons)
     for attack in data: 
-        table.add_row([attack] + data[attack])
+        row = [attack] + data[attack]
+        table.add_row(row)
     print(table)
-
-    #fikse fancy grafer
+    
+    #TODO: fikse fancy grafer
 
 
 
@@ -67,11 +70,12 @@ def attack_pipeline(model) -> dict[list[float]]:
         fb.attacks.L2ProjectedGradientDescentAttack(), #L2 Projected Gradient Descent
         fb.attacks.LinfProjectedGradientDescentAttack() #L-infinity Projected Gradient Descent
     ]
-    epsilons = np.linspace(0.0, 0.2, num=20)
-
+    epsilons = np.linspace(0.0, 0.3, num=15)
+    logger.info("Started to attack model")
     attack = Attack(model)
     data = attack.perform_attacks(attacks, epsilons)
     print_data(data, epsilons)
+    return data
 
 
 

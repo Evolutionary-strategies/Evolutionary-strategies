@@ -1,6 +1,7 @@
 from es import *
 from util import *
 from model import *
+from adveserial_attack import *
 import multiprocessing as mp
 import logging
 import numpy as np
@@ -54,9 +55,10 @@ def launch(nworkers, ismaster, loadparams=False):
         master.join()
 
 def gd_testing():
-    net = Net(True)
-    train(net, acc_limit=0.5)
+    net = load_model()
+    data = attack_pipeline(net)
+    print(data)
 
 if __name__ == '__main__':   
-    launch(127, True,True)
-    
+    # launch(127, True,True)
+    gd_testing()
