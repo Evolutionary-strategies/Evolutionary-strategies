@@ -2,8 +2,8 @@
 /es/data/
 /es/data
 /models/*
-/models/
-/models
+!/models
+!/models/starting_weights.pt
 dump.rdb
 /logs
 /logs/
