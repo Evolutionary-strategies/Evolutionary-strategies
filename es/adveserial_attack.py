@@ -40,8 +40,8 @@ class Attack():
                 acc += 1 - is_adv.float().mean(axis=-1)
             acc = acc.item()/i
             accuracy.append(acc)
-            logger.info(attack + "Accuracy at " + str(eps) + " epsilon: " + str(acc))
-        results[attack] = accuracy
+            logger.info(str(attack) + ": Accuracy at " + str(eps) + " epsilon: " + str(acc))
+        results[str(attack)] = accuracy
 
 
     def perform_attacks(self, attacks, epsilons = [0.03]) -> dict[list[float]]:
@@ -65,12 +65,11 @@ class Attack():
 def print_data(data, epsilons) -> None:
     table = PrettyTable()
     table.field_names = ["Attack"] + list(epsilons)
-    print(data)
+
     for attack in data: 
-        print(attack)
-        row = [attack] + data[attack] #feiler her, feiler også hvis man skriver: row = [attack.__name__] + data[attack]
+        row = [attack] + data[attack]
         table.add_row(row)
-    print(table)
+    logger.info("\n" + str(table))
     
     #TODO: fikse fancy grafer
 
@@ -89,13 +88,6 @@ def attack_pipeline(model) -> dict[list[float]]:
     logger.info("Started to attack model")
     attack = Attack(model)
     data = attack.perform_attacks(attacks, epsilons)
+
     print_data(data, epsilons)
     return data
-
-
-
-
-# a = Attack()
-# print(a.default_accuracy())
-# print(a.perform(fb.attacks.LinfFastGradientAttack(), np.linspace(0.0, 0.1, num=10)))
-# print(a.perform_attacks([fb.attacks.LinfFastGradientAttack(), fb.attacks.L2FastGradientAttack()]))
