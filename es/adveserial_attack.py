@@ -3,6 +3,7 @@ from model import load_model
 import foolbox as fb
 import numpy as np
 import logging
+import multiprocessing as mp
 from prettytable import PrettyTable
 
 logging.basicConfig()
@@ -20,6 +21,7 @@ class Attack():
             model = load_model()
         self.fmodel = fb.PyTorchModel(model, bounds=(0,1))
 
+
     def default_accuracy(self) -> float:
         accuracy = 0
         for i, data in enumerate(testloader, 0):
@@ -27,7 +29,8 @@ class Attack():
             accuracy += fb.utils.accuracy(self.fmodel, images, labels)
         return accuracy/i
     
-    def perform(self, attack, epsilons = [0.03]) -> list[float]:
+
+    def perform(self, attack, results, epsilons = [0.03]) -> None:
         accuracy = []
         for eps in epsilons:
             acc = 0
@@ -37,24 +40,35 @@ class Attack():
                 acc += 1 - is_adv.float().mean(axis=-1)
             acc = acc.item()/i
             accuracy.append(acc)
-            logger.info("Accuracy at " + str(eps) + " epsilon: " + str(acc))
-        return accuracy
+            logger.info(attack + "Accuracy at " + str(eps) + " epsilon: " + str(acc))
+        results[attack] = accuracy
+
 
     def perform_attacks(self, attacks, epsilons = [0.03]) -> dict[list[float]]:
-        results = {}
+        manager = mp.Manager()
+        results = manager.dict()
+        processes = []
         for attack in attacks:
             logger.info("Performing " + str(attack))
-            results[attack] = self.perform(attack, epsilons)
+            p = mp.Process(target=self.perform, args=(attack, results, epsilons))
+            processes.append(p)
+            p.start()
+        
+        for p in processes:
+            p.join()
+        
         logger.info("Results: " + str(results))
         return results
 
 
 
-def print_data(data, epsilons):
+def print_data(data, epsilons) -> None:
     table = PrettyTable()
     table.field_names = ["Attack"] + list(epsilons)
+    print(data)
     for attack in data: 
-        row = [attack] + data[attack]
+        print(attack)
+        row = [attack] + data[attack] #feiler her, feiler også hvis man skriver: row = [attack.__name__] + data[attack]
         table.add_row(row)
     print(table)
     
@@ -65,12 +79,13 @@ def print_data(data, epsilons):
 def attack_pipeline(model) -> dict[list[float]]:
     attacks = [
         fb.attacks.LinfFastGradientAttack(), #FGSM
-        fb.attacks.L2FastGradientAttack(), #L2 Basic Iterative Method
-        fb.attacks.LinfBasicIterativeAttack(), #L-infinity Basic Iterative Method
-        fb.attacks.L2ProjectedGradientDescentAttack(), #L2 Projected Gradient Descent
-        fb.attacks.LinfProjectedGradientDescentAttack() #L-infinity Projected Gradient Descent
+        fb.attacks.L2FastGradientAttack() #L2 Basic Iterative Method
+        #fb.attacks.LinfBasicIterativeAttack(), #L-infinity Basic Iterative Method
+        #fb.attacks.L2ProjectedGradientDescentAttack(), #L2 Projected Gradient Descent
+        #fb.attacks.LinfProjectedGradientDescentAttack() #L-infinity Projected Gradient Descent
     ]
-    epsilons = np.linspace(0.0, 0.3, num=15)
+    epsilons = np.linspace(0.0, 0.1, num=1)
+
     logger.info("Started to attack model")
     attack = Attack(model)
     data = attack.perform_attacks(attacks, epsilons)
