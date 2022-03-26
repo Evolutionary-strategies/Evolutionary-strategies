@@ -5,6 +5,7 @@ import numpy as np
 import logging
 import multiprocessing as mp
 from prettytable import PrettyTable
+import matplotlib.pyplot as plt
 
 logging.basicConfig()
 logger = logging.getLogger(__name__)
@@ -74,7 +75,6 @@ def print_data(data, epsilons) -> None:
     #TODO: fikse fancy grafer
 
 
-
 def attack_pipeline(model) -> dict[list[float]]:
     attacks = [
         fb.attacks.LinfFastGradientAttack(), #FGSM
@@ -88,6 +88,22 @@ def attack_pipeline(model) -> dict[list[float]]:
     logger.info("Started to attack model")
     attack = Attack(model)
     data = attack.perform_attacks(attacks, epsilons)
-
+    
     print_data(data, epsilons)
     return data
+
+
+# Ikke testa
+def plot_data(data, epsilons):
+    logger.info("Plotting data")
+    for attack in data:
+        print(attack)
+        y = data[attack]
+        plt.plot(epsilons, y, color='r', label=attack)
+    
+    plt.xlabel("Epsilon value")
+    plt.ylabel("Accuracy")
+    plt.title("Accuracy over different attacks and epsilons")
+
+    plt.legend()
+    plt.show()
