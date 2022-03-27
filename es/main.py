@@ -55,7 +55,7 @@ def launch(nworkers, ismaster, loadparams=False):
         master.join()
 
 def gd_testing():
-    net = load_model(path="../models/nes_model_sigma01.pt")
+    net = load_model(path="../models/example.pt")
     data = attack_pipeline(net)
     print(data)
 
