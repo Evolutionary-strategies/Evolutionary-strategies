@@ -1,3 +1,5 @@
+from email.mime import image
+from xmlrpc.client import Boolean
 from util import load_data
 from model import load_model
 import foolbox as fb
@@ -62,14 +64,30 @@ class Attack():
         return results
 
 
+    """Used to create image examples, and not necessary for attacks"""
+    def create_image_list(self, attack, epsilons = [0.03]) -> list[list[bool]]:
+        logger.info("Creating image_list")
+        image_list = []
+        for i, data in enumerate(testloader):
+            image = []
+            for eps in epsilons:
+                images, labels = data
+                _, _, is_adv = attack(self.fmodel, images, labels, epsilons=eps)
+                image.append(is_adv)
+            image_list.append(image)
+            if i>10:
+                break
+        return image_list
+
+
 
 
 
 
 def attack_pipeline(model) -> dict[list[float]]:
     attacks = [
-        fb.attacks.LinfFastGradientAttack(), #FGSM
-        fb.attacks.L2FastGradientAttack() #L2 Basic Iterative Method
+        fb.attacks.LinfFastGradientAttack(), #Fast Gradient Sign Method (FGSM)
+        fb.attacks.L2FastGradientAttack() #Fast Gradient Method (FGM)
         #fb.attacks.LinfBasicIterativeAttack(), #L-infinity Basic Iterative Method
         #fb.attacks.L2ProjectedGradientDescentAttack(), #L2 Projected Gradient Descent
         #fb.attacks.LinfProjectedGradientDescentAttack() #L-infinity Projected Gradient Descent
@@ -112,3 +130,68 @@ def plot_data(data, epsilons):
     plt.savefig("../images/accuracy_plot.png")
     plt.show()
     
+
+
+"""Skal returnere True når bildet kan brukes"""
+def usable_img(list1, list2) -> bool:
+    if len(list1) != len(list2):
+        return False
+    
+    if list1[0] == False or list2[0] == False:
+        return False
+
+    for i in range(len(list1)):
+        print(list1[i], ":", list2[i])
+        if list1[i].tolist() != list2[i].tolist():
+            return True
+    
+    return False
+
+def find_img(model1, model2, attack, epsilons = [0.03]) -> list[list[bool]]:
+    logger.info("Finding images")
+    attack1 = Attack(model1)
+    attack2 = Attack(model2)
+    image_list1 = attack1.create_image_list(attack, epsilons)
+    image_list2 = attack2.create_image_list(attack, epsilons)
+    logger.info("Created image_list")
+    print("len(image_list1):")
+    print(len(image_list1))
+    print(type(image_list1))
+
+    if len(image_list1) != len(image_list2):
+        return # Throw error?
+
+    # må fikses så jeg er sikker på at den faktisk har funnet et bilde!
+    selected_img_index = 0
+    for i in range(len(image_list1)):
+        print("type(image_list1[i])")
+        print(type(image_list1[i]))
+        if usable_img(image_list1[i], image_list2[i]):
+            print(i)
+            selected_img_index = i
+            break
+    
+    logger.info("Selected specific image")
+    org_img, label = testloader[selected_img_index] # er ikke indexbar. må finne dette ut! Eventuelt loope
+    images1 = []
+    images2 = []
+    for i in len(image_list1[selected_img_index]):
+        eps = epsilons[i]
+        _, clipped1, _ = attack(model1, org_img, label, epsilons=eps)
+        print(clipped1)
+        print(type(clipped1))
+        images1.append(clipped1)
+        _, clipped2, _ = attack(model2, org_img, label, epsilons=eps)
+        images2.append(clipped2)
+    
+    
+net1 = load_model()
+net2 = load_model("../models/starting_weights.pt")
+find_img(net1, net2, fb.attacks.L2FastGradientAttack(), epsilons = np.linspace(0.0, 0.1, num=4))
+
+
+    
+
+
+
+
