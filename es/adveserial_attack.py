@@ -1,4 +1,4 @@
-from email.mime import image
+"""from email.mime import image
 from xmlrpc.client import Boolean
 from util import load_data
 from model import load_model
@@ -64,7 +64,7 @@ class Attack():
         return results
 
 
-    """Used to create image examples, and not necessary for attacks"""
+    Used to create image examples, and not necessary for attacks
     def create_image_list(self, attack, epsilons = [0.03]) -> list[list[bool]]:
         logger.info("Creating image_list")
         image_list = []
@@ -185,9 +185,9 @@ def find_img(model1, model2, attack, epsilons = [0.03]) -> list[list[bool]]:
         images2.append(clipped2)
     
     
-"""net1 = load_model()
+net1 = load_model()
 net2 = load_model("../models/starting_weights.pt")
-find_img(net1, net2, fb.attacks.L2FastGradientAttack(), epsilons = np.linspace(0.0, 0.1, num=4))"""
+find_img(net1, net2, fb.attacks.L2FastGradientAttack(), epsilons = np.linspace(0.0, 0.1, num=4))
 
 
     
@@ -195,3 +195,4 @@ find_img(net1, net2, fb.attacks.L2FastGradientAttack(), epsilons = np.linspace(0
 
 
 
+"""

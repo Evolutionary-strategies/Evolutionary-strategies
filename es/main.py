@@ -54,10 +54,7 @@ def launch(nworkers, ismaster, loadparams=False):
     if ismaster:
         master.join()
 
-def gd_testing():
-    net = load_model(path="../models/example.pt")
-    data = attack_pipeline(net)
-    print(data)
+
 
 if __name__ == '__main__':   
     launch(127, True,True)
