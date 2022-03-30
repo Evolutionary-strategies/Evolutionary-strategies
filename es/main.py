@@ -60,5 +60,5 @@ def gd_testing():
     print(data)
 
 if __name__ == '__main__':   
-    # launch(127, True,True)
-    gd_testing()
+    launch(127, True,True)
+    

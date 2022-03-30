@@ -185,9 +185,9 @@ def find_img(model1, model2, attack, epsilons = [0.03]) -> list[list[bool]]:
         images2.append(clipped2)
     
     
-net1 = load_model()
+"""net1 = load_model()
 net2 = load_model("../models/starting_weights.pt")
-find_img(net1, net2, fb.attacks.L2FastGradientAttack(), epsilons = np.linspace(0.0, 0.1, num=4))
+find_img(net1, net2, fb.attacks.L2FastGradientAttack(), epsilons = np.linspace(0.0, 0.1, num=4))"""
 
 
     
