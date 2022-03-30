@@ -6,19 +6,15 @@ import logging
 import multiprocessing as mp
 from prettytable import PrettyTable
 import matplotlib.pyplot as plt
-import torch
-import torchvision.transforms as T
-from PIL import Image
 
 logging.basicConfig()
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
-loader = load_data(True)
+loader = load_data(attack = True)
 trainloader = loader[0]
 testloader = loader[1]
 
-# Kjører kun på en CPU
 class Attack():
     def __init__(self, model = None) -> None:
         if model is None:
@@ -41,7 +37,7 @@ class Attack():
             acc = 0
             for i, data in enumerate(testloader, 0):
                 images, labels = data
-                raw, clipped, is_adv = attack(self.fmodel, images, labels, epsilons=eps)
+                _, _, is_adv = attack(self.fmodel, images, labels, epsilons=eps)
                 acc += 1 - is_adv.float().mean(axis=-1)
             acc = acc.item()/i
             accuracy.append(acc)
@@ -66,31 +62,6 @@ class Attack():
         return results
 
 
-    """Used to create image examples, and not necessary for attacks"""
-    def create_image_list(self, attack, epsilons = [0.03]) -> list[list[bool]]:
-        logger.info("Creating image_list")
-        image_list = []
-        for i, data in enumerate(testloader):
-            if i>10:
-                break
-            image = []
-            for eps in epsilons:
-                images, labels = data
-                print("eps", eps)
-                _, _, is_adv = attack(self.fmodel, images, labels, epsilons=eps)
-                image.append(is_adv[0].item())
-                print("is_adv[0]", is_adv[0].item())
-            print("image", image)
-            image_list.append(image)
-            
-        return image_list
-
-    def adv_bool(self, attack, data, epsilons = [0.03]) -> list[bool]:
-        image, label = data
-        _, _, is_adv = attack(self.fmodel, image, label, epsilons=epsilons)
-        return is_adv[0].tolist()
-
-
 
 
 
@@ -99,7 +70,7 @@ class Attack():
 def attack_pipeline(model) -> dict[list[float]]:
     attacks = [
         fb.attacks.LinfFastGradientAttack(), #Fast Gradient Sign Method (FGSM)
-        fb.attacks.L2FastGradientAttack() #Fast Gradient Method (FGM) finker ikke
+        fb.attacks.L2FastGradientAttack() #Fast Gradient Method (FGM) funker ikke
         #fb.attacks.LinfBasicIterativeAttack(), #L-infinity Basic Iterative Method
         #fb.attacks.L2ProjectedGradientDescentAttack(), #L2 Projected Gradient Descent
         #fb.attacks.LinfProjectedGradientDescentAttack() #L-infinity Projected Gradient Descent
@@ -141,127 +112,4 @@ def plot_data(data, epsilons):
     plt.legend()
     plt.savefig("../images/accuracy_plot.png")
     plt.show()
-    
 
-
-"""Skal returnere True når bildet kan brukes"""
-def usable_img(list1, list2) -> bool:
-    if len(list1) != len(list2):
-        return False
-
-    if list1[0] == False or list2[0] == False:
-        return False
-
-    for i in range(len(list1)):
-        if list1[i] != list2[i]:
-            return True
-    
-    return False
-
-
-
-
-
-def print_img(model1, model2, attack, epsilons = [0.03]) -> None:
-    logger.info("Finding images")
-    attack1 = Attack(model1)
-    attack2 = Attack(model2)
-
-    for data in testloader:
-        is_adv1 = attack1.adv_bool(attack, data, epsilons)
-        is_adv2 = attack2.adv_bool(attack, data, epsilons)
-        if usable_img(is_adv1, is_adv2):
-            print("Fant fungerende bilde:", is_adv1, ":", is_adv2)
-            logger.info("Found usable image")
-            org_img, label = data
-
-            for i in range(len(is_adv1)):
-                eps = epsilons[i]
-                fb_mod1 = fb.PyTorchModel(model1, bounds=(0,1))
-                _, clipped1, _ = attack(fb_mod1, org_img, label, epsilons=eps)
-                print("clipped1:")
-                print(clipped1.size())
-                #plt.imshow(clipped1.flatten())
-                """"""
-                # define a transform to convert a tensor to PIL image
-                transform = T.ToPILImage()
-
-                # convert the tensor to PIL image using above transform
-                img = transform(clipped1[0])
-
-                # display the PIL image
-                name = str(i) + ".png"
-                img.save(name)
-                #fjern
-            break
-
-
-
-
-
-
-net1 = load_model()
-net2 = load_model("../models/starting_weights.pt")
-print_img(net1, net2, fb.attacks.LinfFastGradientAttack(), epsilons = np.linspace(0.0, 0.1, num=4))
-
-
-
-
-"""
-def find_img(model1, model2, attack, epsilons = [0.03]) -> list[list[bool]]:
-    logger.info("Finding images")
-    attack1 = Attack(model1)
-    attack2 = Attack(model2)
-    image_list1 = attack1.create_image_list(attack, epsilons)
-    image_list2 = attack2.create_image_list(attack, epsilons)
-    logger.info("Created image_list")
-    print("len(image_list1):")
-    print(len(image_list1))
-    print(type(image_list1))
-
-    print("image_list1", image_list1)
-
-    if len(image_list1) != len(image_list2):
-        return # Throw error?
-
-    # må fikses så jeg er sikker på at den faktisk har funnet et bilde!
-    
-    selected_img_index = 0
-    for i in range(len(image_list1)):
-        print("type(image_list1[i])")
-        print(type(image_list1[i]))
-        print("image_list1[i]", image_list1[i])
-        if usable_img(image_list1[i], image_list2[i]):
-            print(i)
-            selected_img_index = i
-            break
-    
-    logger.info("Selected specific image")
-    subset_indices = [selected_img_index]
-    subset = torch.utils.data.Subset(testloader, subset_indices)
-    testloader_subset = torch.utils.data.DataLoader(subset, batch_size=1, num_workers=0, shuffle=False)
-    org_img, label = next(iter(testloader_subset))
-    
-    #org_img, label = testloader[selected_img_index] # er ikke indexbar. må finne dette ut! Eventuelt loope
-    images1 = []
-    images2 = []
-    for i in len(image_list1[selected_img_index]):
-        eps = epsilons[i]
-        _, clipped1, _ = attack(model1, org_img, label, epsilons=eps)
-        print(clipped1)
-        print(type(clipped1))
-        images1.append(clipped1)
-        _, clipped2, _ = attack(model2, org_img, label, epsilons=eps)
-        images2.append(clipped2)
-    
-    
-net1 = load_model()
-net2 = load_model("../models/starting_weights.pt")
-find_img(net1, net2, fb.attacks.L2FastGradientAttack(), epsilons = np.linspace(0.0, 0.1, num=4))
-
-
-    
-
-
-
-"""
