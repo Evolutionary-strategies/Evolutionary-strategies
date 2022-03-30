@@ -41,10 +41,13 @@ def genseeds(nworkers):
     seeds = np.random.randint(0, 240000000, nworkers)
     return seeds
 
-def load_data():
-    transform = transforms.Compose(
-    [transforms.ToTensor(),
-     transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))])
+def load_data(attack = False):
+    if not attack:
+        transform = transforms.Compose(
+        [transforms.ToTensor(),
+        transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))])
+    else:
+        transform = transforms.ToTensor()
 
     batch_size = 4
 
