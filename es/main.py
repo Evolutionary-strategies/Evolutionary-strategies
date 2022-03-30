@@ -1,7 +1,7 @@
 from es import *
 from util import *
 from model import *
-from adveserial_attack import *
+#from adveserial_attack import *
 import multiprocessing as mp
 import logging
 import numpy as np
