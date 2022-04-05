@@ -41,7 +41,7 @@ class Attack():
                 acc += 1 - is_adv.float().mean(axis=-1)
             acc = acc.item()/i
             accuracy.append(acc)
-            logger.info(str(attack) + ": Accuracy at " + str(eps) + " epsilon: " + str(acc))
+            logger.info(str(attack) + ": Epsilon: " + str(eps) + ", Accuracy: " + str(acc))
         results[str(attack)] = accuracy
 
 
@@ -69,17 +69,20 @@ class Attack():
 
 def attack_pipeline(model) -> dict[list[float]]:
     attacks = [
-        fb.attacks.LinfFastGradientAttack(), #Fast Gradient Sign Method (FGSM)
-        fb.attacks.L2FastGradientAttack() #Fast Gradient Method (FGM) funker ikke
+        fb.attacks.LinfFastGradientAttack() #Fast Gradient Sign Method (FGSM)
+        # fb.attacks.L2AdditiveGaussianNoiseAttack(),
+        # fb.attacks.SaltAndPepperNoiseAttack()
+        # fb.attacks.BoundaryAttack(),
+        # fb.attacks.PointwiseAttack() #funker ikke :(( Blir ikke loada
         #fb.attacks.LinfBasicIterativeAttack(), #L-infinity Basic Iterative Method
         #fb.attacks.L2ProjectedGradientDescentAttack(), #L2 Projected Gradient Descent
         #fb.attacks.LinfProjectedGradientDescentAttack() #L-infinity Projected Gradient Descent
     ]
-    epsilons = np.linspace(0.0, 0.1, num=4)
+    epsilons = np.linspace(0.0, 1.0, num=4)
 
     logger.info("Started to attack model")
     attack = Attack(model)
-    data = {'L2FastGradientAttack(rel_stepsize=1.0, abs_stepsize=None, steps=1, random_start=False)': [0.726890756302521, 0.726890756302521, 0.726890756302521, 0.7270908363345339], 'LinfFastGradientAttack(rel_stepsize=1.0, abs_stepsize=None, steps=1, random_start=False)': [0.726890756302521, 0.4449779911964786, 0.2774109643857543, 0.18517406962785113]}# attack.perform_attacks(attacks, epsilons)
+    data = attack.perform_attacks(attacks, epsilons)
     
     print_data(data, epsilons)
     return data
@@ -112,4 +115,3 @@ def plot_data(data, epsilons):
     plt.legend()
     plt.savefig("../images/accuracy_plot.png")
     plt.show()
-

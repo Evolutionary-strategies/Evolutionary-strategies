@@ -49,9 +49,9 @@ def usable_img(list1, list2) -> bool:
 def print_img(attack, model, img, label, eps, i, model_nr) -> None:
     _, clipped1, _ = attack(model, img, label, epsilons=eps)
     transform = T.ToPILImage()
-    img1 = transform(clipped1[0])
-    name1 = "../images/" + str(classes[label[0].item()]) + "_model" + model_nr + "_i" + str(i) + ".png"
-    img1.save(name1)
+    img = transform(clipped1[0])
+    name = "../images/" + str(classes[label[0].item()]) + "_model" + model_nr + "_i" + str(i) + ".png"
+    img.save(name)
 
 
 
@@ -83,4 +83,3 @@ def print_image(model1, model2, attack, epsilons = [0.03]) -> None:
 net1 = load_model()
 net2 = load_model("../models/starting_weights.pt")
 print_image(net1, net2, fb.attacks.LinfFastGradientAttack(), epsilons = np.linspace(0.0, 0.1, num=4))
-
