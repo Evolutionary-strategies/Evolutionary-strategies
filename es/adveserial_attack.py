@@ -63,11 +63,21 @@ class Attack():
 
 
 
+"""Tar inn en dict med modeller, der navnet på modellen er nøkkelen og modellen er verdien"""
+def model_pipeline(models) -> dict[dict[list[float]]]:
+    data = {}
+    for model_name in models:
+        logger.info("Attacking model: " + model_name)
+        attack_data = attack_pipeline(models[model_name], table=False, plot=False)
+        data[model_name] = attack_data._getvalue()
+
+    logger.info("Finished attacking")
+    logger.info("Data: " + str(data))
+
+    return data
 
 
-
-
-def attack_pipeline(model) -> dict[list[float]]:
+def attack_pipeline(model, table = True, plot = True) -> dict[list[float]]:
     attacks = [
         fb.attacks.LinfFastGradientAttack() #Fast Gradient Sign Method (FGSM)
         # fb.attacks.L2AdditiveGaussianNoiseAttack(),
@@ -78,15 +88,18 @@ def attack_pipeline(model) -> dict[list[float]]:
         #fb.attacks.L2ProjectedGradientDescentAttack(), #L2 Projected Gradient Descent
         #fb.attacks.LinfProjectedGradientDescentAttack() #L-infinity Projected Gradient Descent
     ]
-    epsilons = np.linspace(0.0, 1.0, num=4)
+    epsilons = np.linspace(0.0, 1.0, num=1)
 
     logger.info("Started to attack model")
     attack = Attack(model)
     data = attack.perform_attacks(attacks, epsilons)
-    
-    print_data(data, epsilons)
-    return data
 
+    if table:
+        print_data(data, epsilons)
+    if plot:
+        plot_data(data, epsilons)
+    
+    return data
 
 def print_data(data, epsilons) -> None:
     table = PrettyTable()
@@ -97,11 +110,9 @@ def print_data(data, epsilons) -> None:
         table.add_row(row)
     logger.info("\n" + str(table))
 
-    plot_data(data, epsilons)
 
 
-
-def plot_data(data, epsilons):
+def plot_data(data, epsilons) -> None:
     logger.info("Plotting data")
     cmap = plt.cm.get_cmap("tab20", len(data))
     for i, attack in enumerate(data):

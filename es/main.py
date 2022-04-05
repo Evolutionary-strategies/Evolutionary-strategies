@@ -54,12 +54,15 @@ def launch(nworkers, ismaster, loadparams=False):
     if ismaster:
         master.join()
 
-def gd_testing():
-    net = load_model(path="../models/nes_model_sigma01.pt")
-    data = attack_pipeline(net)
-    print(data)
+def attack_testing():
+    models = {
+        "nes_model_sigma01": load_model(path="../models/nes_model_sigma01.pt"),
+        "gd_model_max": load_model(path="../models/gd_model_max.pt")
+    }
+    model_pipeline(models)
+
 
 if __name__ == '__main__':   
-    gd_testing()
+    attack_testing()
     # launch(127, True,True)
 
