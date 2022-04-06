@@ -6,6 +6,7 @@ import logging
 import multiprocessing as mp
 from prettytable import PrettyTable
 import matplotlib.pyplot as plt
+import json
 
 logging.basicConfig()
 logger = logging.getLogger(__name__)
@@ -74,12 +75,16 @@ def model_pipeline(models) -> dict[dict[list[float]]]:
     logger.info("Finished attacking")
     logger.info("Data: " + str(data))
 
+    save_to_json(data)
+
     return data
 
 
 def attack_pipeline(model, table = True, plot = True) -> dict[list[float]]:
     attacks = [
-        fb.attacks.LinfFastGradientAttack() #Fast Gradient Sign Method (FGSM)
+        fb.attacks.LinfFastGradientAttack(), #Fast Gradient Sign Method (FGSM)
+        fb.attacks.L2ProjectedGradientDescentAttack(),
+        fb.attacks.LinfProjectedGradientDescentAttack()
         # fb.attacks.L2AdditiveGaussianNoiseAttack(),
         # fb.attacks.SaltAndPepperNoiseAttack()
         # fb.attacks.BoundaryAttack(),
@@ -88,7 +93,7 @@ def attack_pipeline(model, table = True, plot = True) -> dict[list[float]]:
         #fb.attacks.L2ProjectedGradientDescentAttack(), #L2 Projected Gradient Descent
         #fb.attacks.LinfProjectedGradientDescentAttack() #L-infinity Projected Gradient Descent
     ]
-    epsilons = np.linspace(0.0, 1.0, num=1)
+    epsilons = [0.005, 0.01, 0.3, 0.5]# np.linspace(0.0, 1.0, num=1)
 
     logger.info("Started to attack model")
     attack = Attack(model)
@@ -126,3 +131,9 @@ def plot_data(data, epsilons) -> None:
     plt.legend()
     plt.savefig("../images/accuracy_plot.png")
     plt.show()
+
+
+"""data should be in dict format"""
+def save_to_json(data) -> None:
+    with open('../accuracy_data.json', 'w') as fp:
+        json.dump(data, fp,  indent=4)
