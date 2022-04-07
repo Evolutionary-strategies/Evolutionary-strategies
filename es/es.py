@@ -44,7 +44,7 @@ def run_worker(id, lr, noise, sigma, nworkers, theta_0):
     while True:
         results, seeds = worker.poll_run()
         params += calc_evolution(results, len(params), noise, worker.learning_rate, sigma, nworkers)
-        
+        """worker.run_id % 100 == 1 and"""
         if  worker.run_id % 100 == 1 and worker.worker_id == 1:
             logger.info(f"run: {worker.run_id}")
             accuracy = net.test(log=True)
