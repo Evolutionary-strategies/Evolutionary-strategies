@@ -26,10 +26,13 @@ class Attack():
 
     def default_accuracy(self) -> float:
         accuracy = 0
+        logger.info("Calculating default accuracy")
         for i, data in enumerate(testloader, 0):
             images, labels = data
             accuracy += fb.utils.accuracy(self.fmodel, images, labels)
-        return accuracy/i
+        accuracy /= i
+        logger.info("Default accuracy: ", str(accuracy))
+        return accuracy
     
 
     def perform(self, attack, results, epsilons = [0.03]) -> None:
@@ -66,45 +69,53 @@ class Attack():
 
 """Tar inn en dict med modeller, der navnet på modellen er nøkkelen og modellen er verdien"""
 def model_pipeline(models) -> dict[dict[list[float]]]:
-    data = {}
+    manager = mp.Manager()
+    data = manager.dict()
+    processes = []
+
     for model_name in models:
         logger.info("Attacking model: " + model_name)
-        attack_data = attack_pipeline(models[model_name], table=False, plot=False)
-        data[model_name] = attack_data._getvalue()
+
+        model = models[model_name]
+        p = mp.Process(target=attack_pipeline, args=(data, model_name, model, False, False))
+        processes.append(p)
+        p.start()
+
+    for p in processes:
+        p.join()
 
     logger.info("Finished attacking")
     logger.info("Data: " + str(data))
-
-    save_to_json(data)
+    # save_to_json(data._getvalue(), "all_models") Funker ikke, vet ikke hvorfor
 
     return data
 
 
-def attack_pipeline(model, table = True, plot = True) -> dict[list[float]]:
+def attack_pipeline(data, model_name, model, table = True, plot = True) -> None:
     attacks = [
-        fb.attacks.LinfFastGradientAttack(), #Fast Gradient Sign Method (FGSM)
-        fb.attacks.L2ProjectedGradientDescentAttack(),
-        fb.attacks.LinfProjectedGradientDescentAttack()
-        # fb.attacks.L2AdditiveGaussianNoiseAttack(),
-        # fb.attacks.SaltAndPepperNoiseAttack()
+        fb.attacks.LinfFastGradientAttack() #Funker
+        #fb.attacks.L2ProjectedGradientDescentAttack(), #Funker
+        #fb.attacks.LinfProjectedGradientDescentAttack() #Funker
+        # fb.attacks.L2AdditiveGaussianNoiseAttack() #Funker
+        # fb.attacks.SaltAndPepperNoiseAttack() #Funker kanskje
         # fb.attacks.BoundaryAttack(),
-        # fb.attacks.PointwiseAttack() #funker ikke :(( Blir ikke loada
         #fb.attacks.LinfBasicIterativeAttack(), #L-infinity Basic Iterative Method
         #fb.attacks.L2ProjectedGradientDescentAttack(), #L2 Projected Gradient Descent
         #fb.attacks.LinfProjectedGradientDescentAttack() #L-infinity Projected Gradient Descent
     ]
-    epsilons = [0.005, 0.01, 0.3, 0.5]# np.linspace(0.0, 1.0, num=1)
+    epsilons = [0.5]# [0.0, 0.005, 0.01, 0.02, 0.03, 0.05, 0.1, 0.2, 0.3, 0.5, 1.0, 2.0, 3.0, 5.0]# np.linspace(0.0, 1.0, num=1)
 
     logger.info("Started to attack model")
     attack = Attack(model)
-    data = attack.perform_attacks(attacks, epsilons)
+    data[model_name] = attack.perform_attacks(attacks, epsilons)._getvalue()
+
+    save_to_json(data[model_name], model_name)
 
     if table:
         print_data(data, epsilons)
     if plot:
         plot_data(data, epsilons)
-    
-    return data
+
 
 def print_data(data, epsilons) -> None:
     table = PrettyTable()
@@ -134,6 +145,7 @@ def plot_data(data, epsilons) -> None:
 
 
 """data should be in dict format"""
-def save_to_json(data) -> None:
-    with open('../accuracy_data.json', 'w') as fp:
+def save_to_json(data, model_name) -> None:
+    file_name = "../aa_results/accuracy_data_" + model_name + ".json"
+    with open(file_name, 'w') as fp:
         json.dump(data, fp,  indent=4)

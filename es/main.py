@@ -39,12 +39,13 @@ def launch(nworkers, ismaster, loadparams=False):
     else:
         theta_0 =  np.random.uniform(-1.0, 1.0, 666890) #666890
     mp.log_to_stderr(logging.DEBUG)
-    sigma = 0.15
+    sigma = 0.15                #Kan endres
+    learning_rate = 0.01        #Kan endres
     if ismaster:
         master = mp.Process(target = run_master, args = (nworkers,))
         master.start()
     noise = SharedNoiseTable()
-    workers = [mp.Process(target=run_worker, args=(x,0.01,noise, sigma, nworkers, theta_0)) for x in range(0, nworkers)]
+    workers = [mp.Process(target=run_worker, args=(x, learning_rate, noise, sigma, nworkers, theta_0)) for x in range(0, nworkers)]
     #workers.append(mp.Process(target=silent_worker, args=(0.1,noise, sigma, nworkers)))
     for worker in workers:
         worker.start()
@@ -57,7 +58,9 @@ def launch(nworkers, ismaster, loadparams=False):
 def attack_testing():
     models = {
         "nes_model_sigma01": load_model(path="../models/nes_model_sigma01.pt"),
-        "gd_model_max": load_model(path="../models/gd_model_max.pt")
+        "gd_model_max": load_model(path="../models/gd_model_max.pt"),
+        "nes_model_sigma015": load_model(path="../models/nes_model_sigma015.pt"),
+        "es_model_sigma015_acc073_1": load_model(path="../models/es_model_sigma015_acc073_1.pt")
     }
     model_pipeline(models)
 
