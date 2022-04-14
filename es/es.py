@@ -50,7 +50,7 @@ def run_worker(id, lr, noise, sigma, nworkers, theta_0):
             accuracy = net.test(log=True)
             worker.send_result(accuracy, seeds[worker.worker_id])
             if accuracy > 0.73 and accuracy < 0.74:
-                net.save_model("es_model_sigma015_acc073_2.pt")
+                net.save_model("es_model_sigma015_acc073_3.pt")
             
         else:
             perturbed_params = params + sigma * noise.get(seeds[worker.worker_id], len(params))
