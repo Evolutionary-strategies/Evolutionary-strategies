@@ -33,7 +33,8 @@ def calc_evolution(results, length, noise, lr, sigma, nworkers):
     rews = results[0]
     seeds = results[1]
     for seed, reward in zip(seeds, rews):
-        evo += reward * noise.get(int(seed), length)
+        if seed!= -1:
+            evo += reward * noise.get(int(seed), length)
     return (lr/(sigma*nworkers) * evo)
 
 
@@ -41,7 +42,7 @@ def genseeds(nworkers):
     seeds = np.random.randint(0, 240000000, nworkers)
     return seeds
 
-def load_data():
+"""def load_data():
     transform = transforms.Compose(
     [transforms.ToTensor(),
      transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))])
@@ -56,6 +57,42 @@ def load_data():
                                         download=True, transform=transform)
     testloader = torch.utils.data.DataLoader(testset, batch_size=batch_size,
                                             shuffle=False, num_workers=0)
+
+    classes = ('plane', 'car', 'bird', 'cat',
+            'deer', 'dog', 'frog', 'horse', 'ship', 'truck')
+
+    return (trainloader, testloader)"""
+
+def load_data():
+    transform = transforms.Compose(
+    [transforms.ToTensor(),
+     transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))])
+
+    batch_size = 4
+
+    testset = torchvision.datasets.CIFAR10(root='./data', train=False,
+                                        download=True, transform=transform)
+    testloader = torch.utils.data.DataLoader(testset, batch_size=batch_size,
+                                            shuffle=False, num_workers=0)
+
+    full_trainset = torchvision.datasets.CIFAR10(root='./data', train=True,
+                                            download=True, transform=transform)
+    full_trainloader = torch.utils.data.DataLoader(full_trainset, batch_size=1, #Settes til en for å trekke ut tall
+                                            shuffle=False, num_workers=0)
+    indices = []
+    class_units = [0 for i in range(10)] 
+    number_per_class = 1000 #Change this
+
+    for i,data in enumerate(full_trainloader):
+        _ , label = data
+
+        if class_units[label] < number_per_class:
+            class_units[label] += 1
+            indices.append(i)
+
+    train_subset = torch.utils.data.Subset(full_trainset, indices)
+    trainloader = torch.utils.data.DataLoader(train_subset, batch_size=batch_size,
+                        shuffle=False, num_workers=0)
 
     classes = ('plane', 'car', 'bird', 'cat',
             'deer', 'dog', 'frog', 'horse', 'ship', 'truck')

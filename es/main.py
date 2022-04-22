@@ -39,7 +39,7 @@ def launch(nworkers, ismaster, loadparams=False):
     else:
         theta_0 =  np.random.uniform(-1.0, 1.0, 666890) #666890
     mp.log_to_stderr(logging.DEBUG)
-    sigma = 0.15
+    sigma = 0.1
     if ismaster:
         master = mp.Process(target = run_master, args = (nworkers,))
         master.start()
@@ -57,5 +57,6 @@ def launch(nworkers, ismaster, loadparams=False):
 
 
 if __name__ == '__main__':   
-    launch(127, True,True)
+    launch(5, True,True)
+    
     

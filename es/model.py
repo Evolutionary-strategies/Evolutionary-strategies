@@ -78,8 +78,18 @@ class Net(nn.Module):
         name = os.path.join(model_folder_path, name)
         torch.save(self.state_dict(), name)
 
+
+    def cw_loss(self,outputs,labels):
+        one_hot_labels = torch.eye(len(outputs[0]))[labels] # discrete model predictions
+        i, _ = torch.max((1-one_hot_labels)*outputs, dim=1) # actual value
+        j = torch.masked_select(outputs, one_hot_labels.bool()) #ideal value
+        cost = -torch.clamp((j-i), min=0)  #loss
+        cost = cost.sum()
+        return cost
+
     def test(self, log=False) -> float:
         loss_fn=nn.CrossEntropyLoss()
+        #loss_fn = self.cw_loss
         dataiter = iter(testloader)
         images, labels = dataiter.next()
         running_loss=0
@@ -99,8 +109,34 @@ class Net(nn.Module):
                 correct += (predicted == labels).sum().item()
         test_loss=running_loss/len(testloader)
         accuracy = correct / total
-        if(log):
-            logger.info(f'Accuracy: {correct / total}, Loss: {test_loss:.3f} ')
+        return accuracy
+
+    def set_params_and_test(self, params) -> float:
+        self.set_params(params)
+        return self.test()
+    
+    def es_train(self) -> float:
+        loss_fn=nn.CrossEntropyLoss()
+        #loss_fn = self.cw_loss
+        dataiter = iter(trainloader)
+        images, labels = dataiter.next()
+        running_loss=0
+        correct = 0
+        total = 0
+        # since we're not training, we don't need to calculate the gradients for our outputs
+        with torch.no_grad():
+            for data in trainloader:
+                images, labels = data
+                # calculate outputs by running images through the network
+                outputs = self(images)
+                # the class with the highest energy is what we choose as prediction
+                _, predicted = torch.max(outputs.data, 1)
+                loss= loss_fn(outputs,labels)
+                running_loss+=loss.item()
+                total += labels.size(0)
+                correct += (predicted == labels).sum().item()
+        test_loss=running_loss/len(testloader)
+        accuracy = correct / total
         return accuracy
 
     def set_params_and_test(self, params) -> float:
