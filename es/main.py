@@ -57,6 +57,6 @@ def launch(nworkers, ismaster, loadparams=False):
 
 
 if __name__ == '__main__':   
-    launch(3, True,True)
+    launch(127, True,True)
     
     
