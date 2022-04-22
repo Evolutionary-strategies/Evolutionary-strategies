@@ -51,17 +51,31 @@ def load_data(attack = False):
 
     batch_size = 4
 
-    trainset = torchvision.datasets.CIFAR10(root='./data', train=True,
-                                            download=True, transform=transform)
-    trainloader = torch.utils.data.DataLoader(trainset, batch_size=batch_size,
-                                            shuffle=True, num_workers=0)
     testset = torchvision.datasets.CIFAR10(root='./data', train=False,
                                         download=True, transform=transform)
     testloader = torch.utils.data.DataLoader(testset, batch_size=batch_size,
                                             shuffle=False, num_workers=0)
 
+    full_trainset = torchvision.datasets.CIFAR10(root='./data', train=True,
+                                            download=True, transform=transform)
+    full_trainloader = torch.utils.data.DataLoader(full_trainset, batch_size=1, #Only one batch to simplify subseting the training data
+                                            shuffle=False, num_workers=0)
+    indices = []
+    class_units = [0 for i in range(10)] 
+    number_per_class = 1000 #Change this if you want to train with a bigger portion of the training data
+
+    for i,data in enumerate(full_trainloader):
+        _, label = data
+
+        if class_units[label] < number_per_class:
+            class_units[label] += 1
+            indices.append(i)
+
+    train_subset = torch.utils.data.Subset(full_trainset, indices)
+    trainloader = torch.utils.data.DataLoader(train_subset, batch_size=batch_size,
+                        shuffle=False, num_workers=0)
+    
     classes = ('plane', 'car', 'bird', 'cat',
             'deer', 'dog', 'frog', 'horse', 'ship', 'truck')
 
     return (trainloader, testloader)
-

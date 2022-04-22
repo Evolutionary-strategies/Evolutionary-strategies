@@ -93,17 +93,21 @@ def model_pipeline(models) -> dict[dict[list[float]]]:
 
 def attack_pipeline(data, model_name, model, table = True, plot = True) -> None:
     attacks = [
-        fb.attacks.LinfFastGradientAttack() #Funker
-        #fb.attacks.L2ProjectedGradientDescentAttack(), #Funker
-        #fb.attacks.LinfProjectedGradientDescentAttack() #Funker
-        # fb.attacks.L2AdditiveGaussianNoiseAttack() #Funker
-        # fb.attacks.SaltAndPepperNoiseAttack() #Funker kanskje
-        # fb.attacks.BoundaryAttack(),
-        #fb.attacks.LinfBasicIterativeAttack(), #L-infinity Basic Iterative Method
-        #fb.attacks.L2ProjectedGradientDescentAttack(), #L2 Projected Gradient Descent
-        #fb.attacks.LinfProjectedGradientDescentAttack() #L-infinity Projected Gradient Descent
+        fb.attacks.LinfFastGradientAttack(), #Funker
+        fb.attacks.L2ProjectedGradientDescentAttack(), #Funker
+        fb.attacks.LinfProjectedGradientDescentAttack(), #Funker
+        fb.attacks.L2ContrastReductionAttack(), #Funker
+        fb.attacks.L2AdditiveGaussianNoiseAttack(), #Funker
+        fb.attacks.LinfAdditiveUniformNoiseAttack(), #Funker
+        fb.attacks.L2CarliniWagnerAttack(), #Funker kanskje
+        fb.attacks.L2DeepFoolAttack(), #Funker kanskje
+        fb.attacks.BoundaryAttack(), #Funker kanskje
+        fb.attacks.L2FastGradientAttack(), #Funker kanskje
+        fb.attacks.SaltAndPepperNoiseAttack(), #Funker kanskje
+        fb.attacks.LinfBasicIterativeAttack() #Funker kanskje
+        
     ]
-    epsilons = [0.5]# [0.0, 0.005, 0.01, 0.02, 0.03, 0.05, 0.1, 0.2, 0.3, 0.5, 1.0, 2.0, 3.0, 5.0]# np.linspace(0.0, 1.0, num=1)
+    epsilons = [0.001, 0.005, 0.01, 0.02, 0.03, 0.05, 0.1, 0.2, 0.3, 1.0, 3.0]# np.linspace(0.0, 1.0, num=1)
 
     logger.info("Started to attack model")
     attack = Attack(model)
