@@ -48,21 +48,24 @@ def run_worker(id, lr, noise, sigma, nworkers, theta_0):
         params += calc_evolution(results, len(params), noise, worker.learning_rate, sigma, nworkers)
         """worker.run_id % 100 == 1 and"""
         if  worker.worker_id == 1:
-            if worker.run_id % 100 == 1:
-                logger.info(f"run: {worker.run_id}")
-                logger.info(f'Highest Test Accuracy: {highest_test_accuracy}')
-                logger.info(f'Highest Train Accuracy: {highest_train_accuracy}')
             net.set_params(params)
             accuracy = net.test()
             if accuracy > highest_test_accuracy:
                 highest_test_accuracy = accuracy       
                 net.save_model("es_model_1.pt")
+            if worker.run_id % 100 == 1:
+                logger.info(f"run: {worker.run_id}")
+                logger.info(f'Highest Test Accuracy: {highest_test_accuracy}')
+                logger.info(f"Current Test accuracy: {accuracy}")
             worker.send_result(accuracy, -1)
         elif worker.worker_id == 2: 
             net.set_params(params)
             accuracy = net.es_train()
-            if accuracy > highest_train_accuracy:
+            if accuracy > highest_train_accuracy:      
                 highest_train_accuracy = accuracy
+            if worker.run_id % 100 == 1:
+                logger.info(f'Highest Train Accuracy: {highest_train_accuracy}')
+                logger.info(f"Current train accuracy: {accuracy}")
             worker.send_result(accuracy, -1)
         else:
             perturbed_params = params + sigma * noise.get(seeds[worker.worker_id], len(params))

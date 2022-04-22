@@ -87,7 +87,7 @@ class Net(nn.Module):
         cost = cost.sum()
         return cost
 
-    def test(self, log=False) -> float:
+    def test(self) -> float:
         loss_fn=nn.CrossEntropyLoss()
         #loss_fn = self.cw_loss
         dataiter = iter(testloader)
