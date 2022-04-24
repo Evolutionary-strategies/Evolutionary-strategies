@@ -41,7 +41,7 @@ def run_worker(id, lr, noise, sigma, nworkers, theta_0):
     net = Net()
     params = theta_0
     seeds = np.zeros(500)
-    highest_test_accuracy = 0
+    highest_test_accuracy = 0.4717
     highest_train_accuracy = 0
     while True:
         results, seeds = worker.poll_run()
