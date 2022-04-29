@@ -24,7 +24,7 @@ logger.setLevel(logging.INFO)
 
 def launch(nworkers, ismaster, loadparams=False):
     if loadparams:
-        net = load_model("../models/es_model_1.pt")
+        net = load_model("../models/starting_weights.pt")
         theta_0 = np.concatenate((
             net.conv1.weight.detach().numpy().flatten(),
             net.conv1.bias.detach().numpy().flatten(),
