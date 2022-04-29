@@ -52,7 +52,7 @@ def run_worker(id, lr, noise, sigma, nworkers, theta_0):
             accuracy = net.test()
             if accuracy > highest_test_accuracy:
                 highest_test_accuracy = accuracy       
-                net.save_model("es_model_1.pt")
+                net.save_model("es_model_graph.pt")
             if worker.run_id % 100 == 1:
                 logger.info(f"run: {worker.run_id}")
                 logger.info(f'Highest Test Accuracy: {highest_test_accuracy}')
