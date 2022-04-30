@@ -62,7 +62,7 @@ def load_data(attack = False):
                                             shuffle=False, num_workers=0)
     indices = []
     class_units = [0 for i in range(10)] 
-    number_per_class = 1000 #Change this if you want to train with a bigger portion of the training data
+    number_per_class = 2 #Change this if you want to train with a bigger portion of the training data
 
     for i,data in enumerate(full_trainloader):
         _, label = data

@@ -13,7 +13,6 @@ logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
 loader = load_data(attack = True)
-trainloader = loader[0]
 testloader = loader[1]
 
 class Attack():
@@ -35,7 +34,7 @@ class Attack():
         return accuracy
     
 
-    def perform(self, attack, results, epsilons = [0.03]) -> None:
+    def perform(self, attack, results, epsilons = [0.03], model_name = "None") -> None:
         accuracy = []
         for eps in epsilons:
             acc = 0
@@ -45,39 +44,74 @@ class Attack():
                 acc += 1 - is_adv.float().mean(axis=-1)
             acc = acc.item()/i
             accuracy.append(acc)
-            logger.info(str(attack) + ": Epsilon: " + str(eps) + ", Accuracy: " + str(acc))
+            logger.info(model_name + ":" + str(attack) + ": Epsilon: " + str(eps) + ", Accuracy: " + str(acc))
         results[str(attack)] = accuracy
 
 
-    def perform_attacks(self, attacks, epsilons = [0.03]) -> dict[list[float]]:
+    def perform_attacks(self, attacks, epsilons = [0.03], model_name = "None") -> dict[list[float]]:
         manager = mp.Manager()
         results = manager.dict()
         processes = []
         for attack in attacks:
-            logger.info("Performing " + str(attack))
-            p = mp.Process(target=self.perform, args=(attack, results, epsilons))
+            logger.info(model_name + ":Performing " + str(attack))
+            p = mp.Process(target=self.perform, args=(attack, results, epsilons, model_name))
             processes.append(p)
             p.start()
         
         for p in processes:
             p.join()
         
-        logger.info("Results: " + str(results))
+        logger.info("Results on " + model_name + ": " + str(results))
         return results
 
+attacks = [
+    [
+        fb.attacks.LinfFastGradientAttack(), #Funker
+        fb.attacks.LinfProjectedGradientDescentAttack(), #Funker
+        fb.attacks.LinfAdditiveUniformNoiseAttack(), #Funker
+        fb.attacks.LinfDeepFoolAttack(), # Funker
+        fb.attacks.LinfBasicIterativeAttack() #Funker 
+    ],
+    [
+        fb.attacks.L2ProjectedGradientDescentAttack(), #Funker
+        fb.attacks.L2ContrastReductionAttack(), #Funker
+        fb.attacks.L2AdditiveGaussianNoiseAttack(), #Funke
+        fb.attacks.L2DeepFoolAttack(), #Funker        
+        fb.attacks.L2FastGradientAttack(), #Funker
+        fb.attacks.L2BasicIterativeAttack() # Funker
+    ],
+    [
+        fb.attacks.SaltAndPepperNoiseAttack(), #Funker
+        fb.attacks.NewtonFoolAttack(), #Funker
+        fb.attacks.L2CarliniWagnerAttack() 
+        # fb.attacks.BoundaryAttack(), #Funker kanskje
+        # fb.attacks.EADAttack #usikker, treg
+    ]
+]
 
+epsilons = [
+    [
+        0.005, 0.01, 0.02 #Linf
+    ],
+    [
+        0.3, 0.5, 1.0 #L2
+    ],
+    [
+        0.01, 0.1, 0.5 #L1/andre
+    ]
+]
 
 """Tar inn en dict med modeller, der navnet på modellen er nøkkelen og modellen er verdien"""
 def model_pipeline(models) -> dict[dict[list[float]]]:
     manager = mp.Manager()
     data = manager.dict()
     processes = []
-
+    # for i in range(len(attacks)):
     for model_name in models:
-        logger.info("Attacking model: " + model_name)
+        logger.info(model_name + ":Attacking model")
 
         model = models[model_name]
-        p = mp.Process(target=attack_pipeline, args=(data, model_name, model, False, False))
+        p = mp.Process(target=attack_pipeline, args=(data, model_name, model, attacks[2], epsilons[2], False, False))
         processes.append(p)
         p.start()
 
@@ -91,27 +125,9 @@ def model_pipeline(models) -> dict[dict[list[float]]]:
     return data
 
 
-def attack_pipeline(data, model_name, model, table = True, plot = True) -> None:
-    attacks = [
-        fb.attacks.LinfFastGradientAttack(), #Funker
-        fb.attacks.L2ProjectedGradientDescentAttack(), #Funker
-        fb.attacks.LinfProjectedGradientDescentAttack(), #Funker
-        fb.attacks.L2ContrastReductionAttack(), #Funker
-        fb.attacks.L2AdditiveGaussianNoiseAttack(), #Funker
-        fb.attacks.LinfAdditiveUniformNoiseAttack(), #Funker
-        fb.attacks.L2CarliniWagnerAttack(), #Funker kanskje
-        fb.attacks.L2DeepFoolAttack(), #Funker kanskje
-        fb.attacks.BoundaryAttack(), #Funker kanskje
-        fb.attacks.L2FastGradientAttack(), #Funker kanskje
-        fb.attacks.SaltAndPepperNoiseAttack(), #Funker kanskje
-        fb.attacks.LinfBasicIterativeAttack() #Funker kanskje
-        
-    ]
-    epsilons = [0.001, 0.005, 0.01, 0.02, 0.03, 0.05, 0.1, 0.2, 0.3, 1.0, 3.0]# np.linspace(0.0, 1.0, num=1)
-
-    logger.info("Started to attack model")
+def attack_pipeline(data, model_name, model, attacks, epsilons, table = True, plot = True) -> None:
     attack = Attack(model)
-    data[model_name] = attack.perform_attacks(attacks, epsilons)._getvalue()
+    data[model_name] = attack.perform_attacks(attacks, epsilons, model_name)._getvalue()
 
     save_to_json(data[model_name], model_name)
 
@@ -151,5 +167,5 @@ def plot_data(data, epsilons) -> None:
 """data should be in dict format"""
 def save_to_json(data, model_name) -> None:
     file_name = "../aa_results/accuracy_data_" + model_name + ".json"
-    with open(file_name, 'w') as fp:
+    with open(file_name, 'a') as fp:
         json.dump(data, fp,  indent=4)
