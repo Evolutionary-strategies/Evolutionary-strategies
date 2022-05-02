@@ -66,6 +66,9 @@ def attack_testing():
 
 
 if __name__ == '__main__':   
-    attack_testing()
+    mod = load_model(path="../models/starting_weights.pt", grad = True)
+    train(mod, 0.8)
+    mod.test(True)
+    # attack_testing()
     # launch(127, True,True)
 

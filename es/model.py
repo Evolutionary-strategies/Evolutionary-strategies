@@ -80,11 +80,13 @@ class Net(nn.Module):
 
     def test(self, log=False) -> float:
         loss_fn=nn.CrossEntropyLoss()
-        dataiter = iter(testloader)
-        images, labels = dataiter.next()
+        # dataiter = iter(testloader)
+        # images, labels = dataiter.next()
         running_loss=0
-        correct = 0
-        total = 0
+        correct_tst = 0
+        correct_trn = 0
+        total_tst = 0
+        total_trn = 0
         # since we're not training, we don't need to calculate the gradients for our outputs
         with torch.no_grad():
             for data in testloader:
@@ -93,28 +95,37 @@ class Net(nn.Module):
                 outputs = self(images)
                 # the class with the highest energy is what we choose as prediction
                 _, predicted = torch.max(outputs.data, 1)
-                loss= loss_fn(outputs,labels)
+                loss = loss_fn(outputs,labels)
                 running_loss+=loss.item()
-                total += labels.size(0)
-                correct += (predicted == labels).sum().item()
+                total_tst += labels.size(0)
+                correct_tst += (predicted == labels).sum().item()
+            for data in trainloader:
+                images, labels = data
+                outputs = self(images)
+                _, predicted = torch.max(outputs.data, 1)
+                total_trn += labels.size(0)
+                correct_trn += (predicted == labels).sum().item()
         test_loss=running_loss/len(testloader)
-        accuracy = correct / total
+        acc_tst = correct_tst / total_tst
+        acc_trn = correct_trn / total_trn
         if(log):
-            logger.info(f'Accuracy: {correct / total}, Loss: {test_loss:.3f} ')
-        return accuracy
+            logger.info(f'Accuracy: {acc_tst}, Loss: {test_loss:.3f} ')
+            logger.info("Train Accuracy: " +  str(acc_trn))
+            logger.info("Test Accuracy: " +  str(acc_trn))
+        return (acc_tst, acc_trn)
 
     def set_params_and_test(self, params) -> float:
         self.set_params(params)
         return self.test()
 
 
-def load_model(path = "../models/example.pt") -> Net:
+def load_model(path = "../models/example.pt", grad = False) -> Net:
     logger.info("Loading model")
     net = Net()
     net.load_state_dict(torch.load(path))
     net.eval()
     for param in net.parameters():
-            param.requires_grad = False
+            param.requires_grad = grad
     return net
 
 def train(net, acc_limit = 1) -> None:
@@ -124,7 +135,7 @@ def train(net, acc_limit = 1) -> None:
     criterion = nn.CrossEntropyLoss()
     optimizer = torch.optim.SGD(net.parameters(), lr=0.001, momentum=0.9)
 
-    for epoch in range(5):  # loop over the dataset multiple times
+    for e, epoch in enumerate(range(5)):  # loop over the dataset multiple times
         running_loss = 0.0
         for i, data in enumerate(trainloader, 0):
             # get the inputs; data is a list of [inputs, labels]
@@ -141,12 +152,16 @@ def train(net, acc_limit = 1) -> None:
 
             # print statistics
             running_loss += loss.item()
-            if i % 1000 == 999:    # print every 1000 mini-batches
+            if i % 100 == 99:    # print every 100 mini-batches
                 logger.info(f'[{epoch + 1}, {i + 1:5d}] loss: {running_loss / 1000:.3f}')
+                if e == 0:
+                    logger.info("run: " + str(i))
+                else:
+                    logger.info("run: " + str(i*e))
                 running_loss = 0.0
 
                 if acc_limit < 1:
-                    acc = net.test(True)
+                    acc, _ = net.test(True)
                     if acc >= acc_limit:
                         logger.info('Finished Training')
                         return
