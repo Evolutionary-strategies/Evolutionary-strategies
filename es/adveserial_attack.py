@@ -83,7 +83,7 @@ attacks = [
     [
         fb.attacks.SaltAndPepperNoiseAttack(), #Funker
         fb.attacks.NewtonFoolAttack(), #Funker
-        fb.attacks.L2CarliniWagnerAttack() 
+        # fb.attacks.L2CarliniWagnerAttack() 
         # fb.attacks.BoundaryAttack(), #Funker kanskje
         # fb.attacks.EADAttack #usikker, treg
     ]
