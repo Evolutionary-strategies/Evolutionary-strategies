@@ -57,18 +57,19 @@ def launch(nworkers, ismaster, loadparams=False):
 
 def attack_testing():
     models = {
-        "nes_model_sigma01": load_model(path="../models/nes_model_sigma01.pt")
+        "nes_model_sigma01": load_model(path="../models/nes_model_sigma01.pt"),
         # "gd_model_max": load_model(path="../models/gd_model_max.pt"),
-        # "nes_model_sigma015": load_model(path="../models/nes_model_sigma015.pt"),
-        # "es_model_sigma015_acc073_1": load_model(path="../models/es_model_sigma015_acc073_1.pt")
+        "nes_model_sigma015": load_model(path="../models/nes_model_sigma015.pt"),
+        "es_model_sigma015_acc073_1": load_model(path="../models/es_model_sigma015_acc073_1.pt"),
+	"es_model_sigma015_acc073_2": load_model(path="../models/es_model_sigma015_acc073_2.pt")
     }
     model_pipeline(models)
 
 
 if __name__ == '__main__':   
-    mod = load_model(path="../models/starting_weights.pt", grad = True)
-    train(mod, 0.8)
-    mod.test(True)
-    # attack_testing()
+    # mod = load_model(path="../models/starting_weights.pt", grad = True)
+    # train(mod, 0.8)
+    # mod.test(True)
+    attack_testing()
     # launch(127, True,True)
 
