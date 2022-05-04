@@ -107,17 +107,17 @@ def model_pipeline(models) -> dict[dict[list[float]]]:
     manager = mp.Manager()
     data = manager.dict()
     processes = []
-    # for i in range(len(attacks)):
-    for model_name in models:
-        logger.info(model_name + ":Attacking model")
+    for i in range(len(attacks)):
+        for model_name in models:
+            logger.info(model_name + ":Attacking model")
 
-        model = models[model_name]
-        p = mp.Process(target=attack_pipeline, args=(data, model_name, model, attacks[2], epsilons[2], False, False))
-        processes.append(p)
-        p.start()
+            model = models[model_name]
+            p = mp.Process(target=attack_pipeline, args=(data, model_name, model, attacks[i], epsilons[i], False, False))
+            processes.append(p)
+            p.start()
 
-    for p in processes:
-        p.join()
+        for p in processes:
+            p.join()
 
     logger.info("Finished attacking")
     logger.info("Data: " + str(data))
