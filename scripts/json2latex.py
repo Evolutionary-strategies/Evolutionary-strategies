@@ -46,6 +46,7 @@ def print_table_end():
 
 def print_line(model, attack_acc):
     model_number = {
+        "accuracy_data_gd_model054.json": "Baseline gradient descent model",
         "accuracy_data_nes_model_sigma01.json": "1",
         "accuracy_data_nes_model_sigma015.json": "2",
         "accuracy_data_es_model_sigma015_acc073_1.json": "3",
