@@ -47,7 +47,13 @@ def reformat_data(data) -> tuple[list[float], dict[list[float]]]:
     for run in data:
         runs.append(run)
         for k in acc_dict:
-            acc_dict[k].append(data[run][k])
+            try:
+                acc_dict[k].append(data[run][k])
+            except:
+                print("k" + str(k))
+                print("data[run]" + str(data[run]))
+                print("acc_dict[k]" + str(acc_dict[k]))
+            
 
     return (runs, acc_dict)
 

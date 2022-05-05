@@ -82,11 +82,11 @@ attacks = [
         fb.attacks.L2BasicIterativeAttack() # Funker
     ],
     [
-        fb.attacks.SaltAndPepperNoiseAttack(), #Funker
-        fb.attacks.NewtonFoolAttack() #Funker
+        # fb.attacks.SaltAndPepperNoiseAttack(), #Funker
+        # fb.attacks.NewtonFoolAttack() #Funker
         # fb.attacks.L2CarliniWagnerAttack() 
         # fb.attacks.BoundaryAttack(), #Funker kanskje
-        # fb.attacks.EADAttack #usikker, treg
+        # fb.attacks.EADAttack() #usikker, treg
     ]
 ]
 
