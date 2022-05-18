@@ -3,9 +3,9 @@ This is a repository for training machine learning models using NES, and running
 
 ## Setup
 `
-git clone https://github.com/Evolutionary-strategies/Evolutionary-strategies.git  
-cd Evolutionary-strategies  
-pip3 install -r requirements.txt  
+git clone https://github.com/Evolutionary-strategies/Evolutionary-strategies.git \
+cd Evolutionary-strategies \
+pip3 install -r requirements.txt \
 `
 
 ## structure
