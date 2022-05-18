@@ -2,11 +2,11 @@
 This is a repository for training machine learning models using NES, and running adversarial attacks against said models. 
 
 ## Setup
-`
-git clone https://github.com/Evolutionary-strategies/Evolutionary-strategies.git \
-cd Evolutionary-strategies \
-pip3 install -r requirements.txt \
-`
+```
+git clone https://github.com/Evolutionary-strategies/Evolutionary-strategies.git   
+cd Evolutionary-strategies   
+pip3 install -r requirements.txt
+```
 
 ## structure
 In the scripts folder you will find scripts for setup, and for plotting model accuracy to graph.
