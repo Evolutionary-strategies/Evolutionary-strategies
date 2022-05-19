@@ -1,3 +1,4 @@
+
 from util import load_data
 from model import load_model
 import foolbox as fb
@@ -13,7 +14,7 @@ logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
 loader = load_data(attack = True)
-testloader = loader[1]
+trainloader = loader[0]
 
 class Attack():
     def __init__(self, model = None) -> None:
@@ -26,7 +27,7 @@ class Attack():
     def default_accuracy(self) -> float:
         accuracy = 0
         logger.info("Calculating default accuracy")
-        for i, data in enumerate(testloader, 0):
+        for i, data in enumerate(trainloader, 0):
             images, labels = data
             accuracy += fb.utils.accuracy(self.fmodel, images, labels)
         accuracy /= i
@@ -38,7 +39,7 @@ class Attack():
         accuracy = []
         for eps in epsilons:
             acc = 0
-            for i, data in enumerate(testloader, 0):
+            for i, data in enumerate(trainloader, 0):
                 images, labels = data
                 _, _, is_adv = attack(self.fmodel, images, labels, epsilons=eps)
                 acc += 1 - is_adv.float().mean(axis=-1)
@@ -66,38 +67,41 @@ class Attack():
 
 attacks = [
     [
-        fb.attacks.LinfFastGradientAttack(), #Funker
-        fb.attacks.LinfProjectedGradientDescentAttack(), #Funker
-        fb.attacks.LinfAdditiveUniformNoiseAttack(), #Funker
-        fb.attacks.LinfDeepFoolAttack(), # Funker
-        fb.attacks.LinfBasicIterativeAttack() #Funker 
-    ],
-    [
-        fb.attacks.L2ProjectedGradientDescentAttack(), #Funker
-        fb.attacks.L2ContrastReductionAttack(), #Funker
-        fb.attacks.L2AdditiveGaussianNoiseAttack(), #Funke
-        fb.attacks.L2DeepFoolAttack(), #Funker        
-        fb.attacks.L2FastGradientAttack(), #Funker
-        fb.attacks.L2BasicIterativeAttack() # Funker
-    ],
-    [
-        fb.attacks.SaltAndPepperNoiseAttack(), #Funker
-        fb.attacks.NewtonFoolAttack(), #Funker
-        # fb.attacks.L2CarliniWagnerAttack() 
-        # fb.attacks.BoundaryAttack(), #Funker kanskje
-        # fb.attacks.EADAttack #usikker, treg
+        fb.attacks.LinfAdditiveUniformNoiseAttack()
     ]
 ]
+"""
+    [
+    # fb.attacks.NewtonFoolAttack()
+    # fb.attacks.SaltAndPepperNoiseAttack(),
+    # fb.attacks.L2CarliniWagnerAttack() 
+    # fb.attacks.BoundaryAttack(), #Funker kanskje
+    # fb.attacks.EADAttack() #usikker, treg
+    ],
+    [
+        #fb.attacks.L2ContrastReductionAttack(),
+        #fb.attacks.L2AdditiveGaussianNoiseAttack() 
+        # fb.attacks.LinfFastGradientAttack(),
+        # fb.attacks.LinfProjectedGradientDescentAttack(),
+        # fb.attacks.LinfAdditiveUniformNoiseAttack(),
+        # fb.attacks.LinfDeepFoolAttack(),
+        # fb.attacks.LinfBasicIterativeAttack() 
+    ],
+    [
+        # fb.attacks.L2ProjectedGradientDescentAttack(),
+        
+        #fb.attacks.L2DeepFoolAttack(),        
+        #fb.attacks.L2FastGradientAttack(),
+        #fb.attacks.L2BasicIterativeAttack()
+    ],
+"""
+
+
+
 
 epsilons = [
     [
-        0.005, 0.01, 0.02 #Linf
-    ],
-    [
-        0.3, 0.5, 1.0 #L2
-    ],
-    [
-        0.01, 0.1, 0.5 #L1/andre
+        0.3, 0.8, 1.0
     ]
 ]
 
@@ -106,17 +110,17 @@ def model_pipeline(models) -> dict[dict[list[float]]]:
     manager = mp.Manager()
     data = manager.dict()
     processes = []
-    # for i in range(len(attacks)):
-    for model_name in models:
-        logger.info(model_name + ":Attacking model")
+    for i in range(len(attacks)):
+        for model_name in models:
+            logger.info(model_name + ":Attacking model")
 
-        model = models[model_name]
-        p = mp.Process(target=attack_pipeline, args=(data, model_name, model, attacks[2], epsilons[2], False, False))
-        processes.append(p)
-        p.start()
+            model = models[model_name]
+            p = mp.Process(target=attack_pipeline, args=(data, model_name, model, attacks[i], epsilons[i], False, False))
+            processes.append(p)
+            p.start()
 
-    for p in processes:
-        p.join()
+        for p in processes:
+            p.join()
 
     logger.info("Finished attacking")
     logger.info("Data: " + str(data))
