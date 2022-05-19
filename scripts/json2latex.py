@@ -1,7 +1,7 @@
 import json
 import os
 
-epsilons = [0.005, 0.01, 0.02]
+epsilons = [0.3, 0.8, 1.0]
 
 def get_data(path) -> dict[dict[list[float]]]:
     data = {}
@@ -25,7 +25,9 @@ def print_table_start(attack):
         "L2FastGradientAttack(rel_stepsize=1.0, abs_stepsize=None, steps=1, random_start=False)": "\(L_2\) FGSM",
         "L2BasicIterativeAttack(rel_stepsize=0.2, abs_stepsize=None, steps=10, random_start=False)": "\(L_2\) BIM",
         "L2DeepFoolAttack(steps=50, candidates=10, overshoot=0.02, loss=logits)": "\(L_2\) DeepFool",
-        "L2ProjectedGradientDescentAttack(rel_stepsize=0.025, abs_stepsize=None, steps=50, random_start=True)": "\(L_2\) PGD"
+        "L2ProjectedGradientDescentAttack(rel_stepsize=0.025, abs_stepsize=None, steps=50, random_start=True)": "\(L_2\) PGD",
+        "NewtonFoolAttack(steps=100, stepsize=0.01)": "\(L_2\) Newtonfool",
+        "SaltAndPepperNoiseAttack(steps=1000, across_channels=True, channel_axis=None)": "\(L_2\) S\&P"
     }
     print("\\begin{center}")
     print("\\begin{tabular}{ |c|ccc| }")
@@ -75,14 +77,15 @@ def main():
             line = print_line(model, data[model][attack])
             lines.append(line)
         for line in lines:
-            if type(int(line[0:1])) != type(1):
+            try:
+                int(line[0:1])
+            except:
                 print(line)
+                lines.remove(line)
         for j in range(len(lines)):
             for i in range(len(lines)):
-                # print(lines[i][0:1])
                 if str(j+1) == lines[i][0:1]:
                     print(lines[i])
-                    # lines.remove(lines[i])
         print_table_end()
 
 main()
