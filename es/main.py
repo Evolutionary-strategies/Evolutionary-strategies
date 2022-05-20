@@ -66,10 +66,11 @@ def attack_testing():
     model_pipeline(models)
 
 def train_gd(limit = 1):
-    net = load_model("../models/starting_weights.pt")
+    net = load_model("../models/starting_weights.pt", True)
     train(net, limit)
 
 if __name__ == '__main__':   
+    """ Training should be done on the training branch. """
     """ To launch training of NES run following code: """
     # launch(3, True,True)
 
