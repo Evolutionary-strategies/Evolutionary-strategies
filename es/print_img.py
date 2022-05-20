@@ -33,12 +33,12 @@ class Attack():
     
 
 
-"""Skal returnere True når bildet kan brukes"""
+"""Should return True if its a usable image"""
 def usable_img(list1, list2) -> bool:
     if len(list1) != len(list2):
         return False
 
-    if list1[0] == False or list2[0] == False: # hmm, muligens feil, se på det når man skal fikse skikkelige eksempler
+    if list1[0] == False or list2[0] == False: # Possibly wrong, and not tested.
         return False
 
     for i in range(len(list1)):
@@ -92,6 +92,7 @@ net2 = load_model("../models/starting_weights.pt")
 print_image(net1, net2, fb.attacks.LinfFastGradientAttack(), epsilons = np.linspace(0.0, 0.1, num=4))
 '''
 
+# Following code were used to print the black images within the report
 net1 = load_model("../models/es_model_sigma015_acc073_1.pt")
 net2 = load_model("../models/gd_model054.pt")
 print_image(net1, fb.attacks.L2AdditiveGaussianNoiseAttack(), 10.0, 1, "es_model_sigma015_acc073_1")
