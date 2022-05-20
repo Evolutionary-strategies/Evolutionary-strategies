@@ -73,7 +73,8 @@ if __name__ == '__main__':
     """ Training should be done on the training branch. """
     """ To launch training of NES run following code: """
     # launch(3, True,True)
-
+    
+    """ Change attacks and perturbation budget within the adversarial_attack.py file"""
     """ To test models, change path names and run following code: """
     # attack_testing()
 
