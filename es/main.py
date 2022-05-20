@@ -39,8 +39,8 @@ def launch(nworkers, ismaster, loadparams=False):
     else:
         theta_0 =  np.random.uniform(-1.0, 1.0, 666890) #666890
     mp.log_to_stderr(logging.DEBUG)
-    sigma = 0.15                #Kan endres
-    learning_rate = 0.01        #Kan endres
+    sigma = 0.15                #Changable values
+    learning_rate = 0.01        #Changable values
     if ismaster:
         master = mp.Process(target = run_master, args = (nworkers,))
         master.start()
@@ -65,7 +65,16 @@ def attack_testing():
     }
     model_pipeline(models)
 
+def train_gd(limit = 1):
+    net = load_model("../models/starting_weights.pt")
+    train(net, limit)
 
 if __name__ == '__main__':   
-    launch(5, True,True)
+    """ To launch training of NES run following code: """
+    # launch(3, True,True)
 
+    """ To test models, change path names and run following code: """
+    # attack_testing()
+
+    """ To train GD-model, change the desired accuracy and run following code: """
+    # train_gd(0.5)
